@@ -1,6 +1,9 @@
 import time
 import socket
 import argparse
+import matplotlib.pyplot as plt
+import numpy as np
+from kf_partial import KalmanFilter
 
 def send_msg(client_socket, msg, addr=("127.0.0.1", 4242)):
     client_socket.sendto(msg.encode('UTF-8'), addr)
@@ -14,16 +17,29 @@ def connect(addr="127.0.0.1", port=4242):
     send_msg(client_socket, msg, addr=complete_addr) # init connexion between imu and client
     return client_socket
 
-def compute_response(data:dict, client_socket):
+# def extract_state(data:dict):
+    # E = np.array([data[""])
+
+def compute_response(data:dict, client_socket, filter):
+    if filter is None:
+        filter = KalmanFilter(data['SPEED'], [0, 0, 0], data["ACCELERATION"])
+    
+    # state = extract_state(data)
     next_pos = ""
-    # next_pos = str(data["TRUE POSITION"][0]) + " " + str(data["TRUE POSITION"][1]) + " " + str(data["TRUE POSITION"][2])
     for val in data["TRUE POSITION"]:
         next_pos += str(val)
         next_pos += " "
-    # print("NextPos:", next_pos, end="")
-    # print("RE:", next_pos[-3:-1])
     next_pos = next_pos.removesuffix(" ")
     send_msg(client_socket, next_pos)
+
+def display_history(history):
+    true_pos = np.array(history["TRUE POSITION"]).T
+    ax = plt.axes(projection='3d')
+    ax.plot3D(true_pos[0], true_pos[1], true_pos[2], c='red')
+    plt.show()
+    speed = np.array(history['SPEED'])
+    plt.plot(speed)
+    plt.show()
 
 def get_dict():
     return  {
@@ -33,30 +49,44 @@ def get_dict():
         "DIRECTION":[0, 0, 0],
     }
 
+def get_empty_dict():
+    return {
+        "TRUE POSITION":[],
+        "SPEED":[],
+        "ACCELERATION":[],
+        "DIRECTION":[],
+    }
+
 def read(client_socket, address="127.0.0.1", port=4242):
     parsed = get_dict()
+    history = get_empty_dict()
+    filter = None
     while True:
         try:
             data, server = client_socket.recvfrom(1024)
             data_decode:str = data.decode()
             if "MSG_END" in data_decode:
-                compute_response(parsed, client_socket)
+                compute_response(parsed, client_socket, filter)
                 parsed = get_dict()
             else:
                 for key in parsed.keys():
                     if key in data_decode:
                         lines = data_decode.splitlines()
                         valeurs = [float(val) for val in lines[1:]]
+                        history[key].append(valeurs)
                         parsed[key] = valeurs
             print(f"Readable data:", data_decode)
             
         except socket.timeout:
             print('REQUEST TIMED OUT')
-            exit()
+            break
+
+    return history    
 
 def main(address="127.0.0.1", port=4242):
     client_socket = connect(addr=address, port=port)
-    read(client_socket, address, port)
+    history = read(client_socket, address, port)
+    display_history(history)
 
 
 if __name__ == "__main__":
