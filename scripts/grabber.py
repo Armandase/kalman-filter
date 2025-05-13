@@ -4,6 +4,7 @@ import argparse
 import matplotlib.pyplot as plt
 import numpy as np
 from kf_partial import KalmanFilter
+from filters import mobile_average, low_pass_filter
 
 def send_msg(client_socket, msg, addr=("127.0.0.1", 4242)):
     client_socket.sendto(msg.encode('UTF-8'), addr)
@@ -47,9 +48,13 @@ def display_history(history):
 
     ax3 = fig.add_subplot(2, 2, 3)
     acceleration = np.array(history['ACCELERATION']).T
+    avg = mobile_average(acceleration[0])
+    low_pass = low_pass_filter(acceleration[0])
     ax3.plot(acceleration[0], label="X")
-    ax3.plot(acceleration[1], label="Y")
-    ax3.plot(acceleration[2], label="Z")
+    ax3.plot(avg, label="X MA")
+    ax3.plot(low_pass, label="X LP")
+    # ax3.plot(acceleration[1], label="Y")
+    # ax3.plot(acceleration[2], label="Z")
     ax3.set_title("Acceleration")
     ax3.legend()
 
