@@ -12,8 +12,10 @@ class KalmanFilter():
         self.A[3, 6] = DELTA_T  # vx depends on ax
         self.A[4, 7] = DELTA_T  # vy depends on ay
         self.A[5, 8] = DELTA_T  # vz depends on az
-        
-        self.H = np.eye(3) # used to map the measurement space to the state space
+
+        self.H = np.zeros((6, 9))       # used to map the measurement space to the state space
+        for i in range(6):
+            self.H[i, i + 3] = 1
         self.Q = np.diag([       # Process noise covariance Q (9x9)
             0.1, 0.1, 0.1,       # position x, y, z
             0.01, 0.01, 0.01,    # velocity x, y, z
@@ -34,7 +36,7 @@ class KalmanFilter():
 
         #For x we should have [p_xyz, v_xyz, a_xyz]
         velocity = calculate_velocity(speed, direction)
-        print(velocity)
+        # print(velocity)
         self.estim_x = np.concatenate((true_pos, velocity, acceleration)) # [px, py, pz, vx, vy, vz, accelx, accely, accelz]
         self.pred_x = np.concatenate((true_pos, velocity, acceleration)) # [px, py, pz, vx, vy, vz, accelx, accely, accelz]
         # print("x : ", self.estim_x)
@@ -74,5 +76,5 @@ def calculate_velocity(speed, direction):
     - velocity: A vector representing the velocity.
     """
 
-    velocity = speed * direction
+    velocity = speed * np.array(direction)
     return velocity

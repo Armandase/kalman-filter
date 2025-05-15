@@ -2,8 +2,9 @@ import time
 import socket
 import argparse
 import numpy as np
-from kf_partial import KalmanFilter
+# from kf_partial import KalmanFilter
 from utils import display_history
+from kalman_filter import KalmanFilter
 
 
 
@@ -24,15 +25,16 @@ def connect(addr="127.0.0.1", port=4242):
 
 def compute_response(data:dict, client_socket, filter):
     if filter is None:
-        filter = KalmanFilter(data['SPEED'], [0, 0, 0], data["ACCELERATION"])
+        filter = KalmanFilter(data['DIRECTION'], data["ACCELERATION"], data['SPEED'], data["TRUE POSITION"])
     
     # state = extract_state(data)
-    next_pos = ""
-    for val in data["TRUE POSITION"]:
-        next_pos += str(val)
-        next_pos += " "
-    next_pos = next_pos.removesuffix(" ")
-    send_msg(client_socket, next_pos)
+    # next_pos = ""
+    # for val in data["TRUE POSITION"]:
+    #     next_pos += str(val)
+    #     next_pos += " "
+    # next_pos = next_pos.removesuffix(" ")
+    # send_msg(client_socket, next_pos)
+    print("estimation", filter.predict())
 
 
 def get_dict():
