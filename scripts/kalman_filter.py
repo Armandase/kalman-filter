@@ -6,7 +6,7 @@ class KalmanFilter():
         print(f"Direction : {direction},\nacceleration : {acceleration},\nspeed : {speed},\ntrue_pos: {true_pos}")
         self.A = np.eye(3) # state transition matrix
         self.H = np.eye(3) # used to map the measurement space to the state space
-        self.Q = np.eye(1) # state noise covariance matrix
+        self.Q = np.eye(3) # state noise covariance matrix
         self.R = np.eye(3) # measurement noise covariance matrix
         for i in range(len(self.R)):
             self.R[i,i] = pow(10,-(3-i))
@@ -15,16 +15,18 @@ class KalmanFilter():
         self.P = np.eye(3) # error covariance matrix
         self.pred_P = np.eye(3) # prediction of the error covariance matrix
 
-        self.estim_x = np.zeros((3, 1))
-        self.pred_x = np.zeros((3, 1))
+        self.estim_x = np.concatenate(true_pos, direction, acceleration) # [px, py, pz, dirx, diry, dirz, accelx, accely, accelz]
+        # self.estim_x = np.zeros((9, 1))
+        self.pred_x = np.concatenate(true_pos, direction, acceleration) # [px, py, pz, dirx, diry, dirz, accelx, accely, accelz]
+        # self.pred_x = np.zeros((9, 1))
 
-        self.pos = np.zeros((3, 1)) # position
+        self.pos = true_pos # position
         self.velocity = None # velocity
 
     def predict(self):
         prediction = self.A @ self.estim_x
         self.pred_P = self.A @ self.P @ self.A.T + self.Q
-        return prediction,
+        return prediction
 
     def update(self, z):
         """
