@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from kalman_filter import KalmanFilter
 
 
 def display_history(history):
@@ -37,3 +38,4 @@ def display_history(history):
 
     plt.tight_layout()
     plt.show()
+    KalmanFilter(direction[:,0], acceleration[:,0], speed[:,0])
