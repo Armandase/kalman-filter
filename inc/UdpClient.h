@@ -7,7 +7,6 @@
 #include <cstring>
 #include <cerrno>
 
-
 class UdpClient
 {
     public:
