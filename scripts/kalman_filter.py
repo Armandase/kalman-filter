@@ -1,4 +1,5 @@
 import numpy as np
+from constants import DELTA_T
 
 class KalmanFilter():
     def __init__(self):
@@ -12,6 +13,9 @@ class KalmanFilter():
 
         self.estim_x = np.zeros((3, 1))
         self.pred_x = np.zeros((3, 1))
+
+        self.pos = np.zeros((3, 1)) # position
+        self.velocity = None # velocity
 
     def predict(self):
         prediction = self.A @ self.estim_x
@@ -27,3 +31,8 @@ class KalmanFilter():
 
         self.estim_x = self.pred_x + K @ (z + self.H @ self.pred_x)
         self.P = self.pred_P - self.K @ self.H @ self.pred_P
+
+    def update_position(self, accel, direction, speed, delta_t=DELTA_T):
+        self.velocity = [speed * d for d in direction]
+        self.pos = self.pos + self.velocity * delta_t + 0.5 * accel * delta_t**2
+        return self.pos
