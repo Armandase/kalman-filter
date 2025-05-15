@@ -15,11 +15,15 @@ class KalmanFilter():
         self.P = np.eye(3) # error covariance matrix
         self.pred_P = np.eye(3) # prediction of the error covariance matrix
 
-        self.estim_x = np.concatenate(true_pos, direction, acceleration) # [px, py, pz, dirx, diry, dirz, accelx, accely, accelz]
-        # self.estim_x = np.zeros((9, 1))
-        self.pred_x = np.concatenate(true_pos, direction, acceleration) # [px, py, pz, dirx, diry, dirz, accelx, accely, accelz]
-        # self.pred_x = np.zeros((9, 1))
 
+
+
+        #For x we should have [p_xyz, v_xyz, a_xyz]
+        velocity = calculate_velocity(speed, direction)
+        print(velocity)
+        self.estim_x = np.concatenate((true_pos, velocity, acceleration)) # [px, py, pz, vx, vy, vz, accelx, accely, accelz]
+        self.pred_x = np.concatenate((true_pos, velocity, acceleration)) # [px, py, pz, vx, vy, vz, accelx, accely, accelz]
+        # print("x : ", self.estim_x)
         self.pos = true_pos # position
         self.velocity = None # velocity
 
@@ -42,3 +46,19 @@ class KalmanFilter():
         self.velocity = [speed * d for d in direction]
         self.pos = self.pos + self.velocity * delta_t + 0.5 * accel * delta_t**2
         return self.pos
+
+
+def calculate_velocity(speed, direction):
+    """
+    Calculate the velocity vector given speed and direction.
+
+    Parameters:
+    - speed: A scalar value representing the speed.
+    - direction: A NumPy array representing the direction.
+
+    Returns:
+    - velocity: A vector representing the velocity.
+    """
+
+    velocity = speed * direction
+    return velocity
