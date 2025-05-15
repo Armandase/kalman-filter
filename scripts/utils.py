@@ -38,4 +38,11 @@ def display_history(history):
 
     plt.tight_layout()
     plt.show()
-    KalmanFilter(direction[:,0], acceleration[:,0], speed[:,0], true_pos[:,0])
+
+def array_to_reponse(data):
+    response = ""
+    for val in data:
+        response += "{:.6f}".format(val)
+        response += " "
+    response = response.removesuffix(" ")
+    return response

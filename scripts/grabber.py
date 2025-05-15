@@ -3,7 +3,7 @@ import socket
 import argparse
 import numpy as np
 # from kf_partial import KalmanFilter
-from utils import display_history
+from utils import display_history, array_to_reponse
 from kalman_filter import KalmanFilter
 
 
@@ -25,17 +25,20 @@ def connect(addr="127.0.0.1", port=4242):
 
 def compute_response(data:dict, client_socket, filter):
     if filter is None:
-        filter = KalmanFilter(data['DIRECTION'], data["ACCELERATION"], data['SPEED'], data["TRUE POSITION"])
+        filter = KalmanFilter(direction=data['DIRECTION'], acceleration=data["ACCELERATION"], speed=data['SPEED'], true_pos=data["TRUE POSITION"])
     
-    # state = extract_state(data)
-    # next_pos = ""
-    # for val in data["TRUE POSITION"]:
-    #     next_pos += str(val)
-    #     next_pos += " "
-    # next_pos = next_pos.removesuffix(" ")
-    # send_msg(client_socket, next_pos)
-    print("estimation", filter.predict())
+    # response = array_to_reponse(data["TRUE POSITION"])
+    # print("next pos SEND", response)
 
+    x_estimated = filter.predict()
+    velocity = filter.calculate_velocity(data['SPEED'], data['DIRECTION'])
+    filter.update(np.concatenate((velocity, np.array(data["ACCELERATION"]))))
+    next_pos = filter.update_position(velocity=x_estimated[:3], acceleration=x_estimated[3:6])
+
+    response = array_to_reponse(next_pos)
+    print("next pos as str", next_pos)
+    print('real next pos', data["TRUE POSITION"])
+    send_msg(client_socket, response)
 
 def get_dict():
     return  {
@@ -57,6 +60,7 @@ def read(client_socket, address="127.0.0.1", port=4242):
     parsed = get_dict()
     history = get_empty_dict()
     filter = None
+    counter = 0
     while True:
         try:
             data, server = client_socket.recvfrom(1024)
@@ -65,6 +69,9 @@ def read(client_socket, address="127.0.0.1", port=4242):
             if "MSG_END" in data_decode:
                 compute_response(parsed, client_socket, filter)
                 parsed = get_dict()
+                counter += 1
+                if counter > 2:
+                    exit(0)
             else:
                 for key in parsed.keys():
                     if key in data_decode:
@@ -73,7 +80,6 @@ def read(client_socket, address="127.0.0.1", port=4242):
                         history[key].append(valeurs)
                         parsed[key] = valeurs
             # print(f"Readable data:", data_decode)
-            
         except socket.timeout:
             print('REQUEST TIMED OUT')
             break
