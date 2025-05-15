@@ -4,15 +4,29 @@ from constants import DELTA_T
 class KalmanFilter():
     def __init__(self, direction, acceleration, speed, true_pos):
         print(f"Direction : {direction},\nacceleration : {acceleration},\nspeed : {speed},\ntrue_pos: {true_pos}")
-        self.A = np.eye(3) # state transition matrix
+        self.A = np.eye(9) # state transition matrix
+        self.A[0, 3] = DELTA_T  # px depends on vx
+        self.A[1, 4] = DELTA_T  # py depends on vy
+        self.A[2, 5] = DELTA_T  # pz depends on vz
+        
+        self.A[3, 6] = DELTA_T  # vx depends on ax
+        self.A[4, 7] = DELTA_T  # vy depends on ay
+        self.A[5, 8] = DELTA_T  # vz depends on az
+        
         self.H = np.eye(3) # used to map the measurement space to the state space
-        self.Q = np.eye(3) # state noise covariance matrix
-        self.R = np.eye(3) # measurement noise covariance matrix
-        for i in range(len(self.R)):
-            self.R[i,i] = pow(10,-(3-i))
-        print(self.R)
+        self.Q = np.diag([       # Process noise covariance Q (9x9)
+            0.1, 0.1, 0.1,       # position x, y, z
+            0.01, 0.01, 0.01,    # velocity x, y, z
+            0.001, 0.001, 0.001  # acceleration x, y, z
+        ])
+        self.R = np.diag([
+            0.01,        # speed variance (σ=0.1²)
+            1e-6, 1e-6, 1e-6,   # accelerometer noise (σ=0.001²)
+            1e-4, 1e-4, 1e-4    # gyroscope/direction noise (σ=0.01²)
+        ])
 
-        self.P = np.eye(3) # error covariance matrix
+
+        self.P = np.eye(9) # error covariance matrix
         self.pred_P = np.eye(3) # prediction of the error covariance matrix
 
 
