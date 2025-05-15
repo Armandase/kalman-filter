@@ -38,4 +38,4 @@ def display_history(history):
 
     plt.tight_layout()
     plt.show()
-    KalmanFilter(direction[:,0], acceleration[:,0], speed[:,0])
+    KalmanFilter(direction[:,0], acceleration[:,0], speed[:,0], true_pos[:,0])

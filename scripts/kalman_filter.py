@@ -2,7 +2,8 @@ import numpy as np
 from constants import DELTA_T
 
 class KalmanFilter():
-    def __init__(self):
+    def __init__(self, direction, acceleration, speed, true_pos):
+        print(f"Direction : {direction},\nacceleration : {acceleration},\nspeed : {speed},\ntrue_pos: {true_pos}")
         self.A = np.eye(3) # state transition matrix
         self.H = np.eye(3) # used to map the measurement space to the state space
         self.Q = np.eye(3) # state noise covariance matrix
