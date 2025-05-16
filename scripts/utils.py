@@ -45,4 +45,5 @@ def array_to_reponse(data):
         response += "{:.6f}".format(val)
         response += " "
     response = response.removesuffix(" ")
+    print(response)
     return response

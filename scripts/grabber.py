@@ -9,12 +9,13 @@ from kalman_filter import KalmanFilter
 
 
 def send_msg(client_socket, msg, addr=("127.0.0.1", 4242)):
+    print("Message:", msg)
     client_socket.sendto(msg.encode('UTF-8'), addr)
     return client_socket
 
 def connect(addr="127.0.0.1", port=4242):
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    client_socket.settimeout(3.0)
+    client_socket.settimeout(10.0)
     complete_addr = (addr, port)
     msg = "READY"
     send_msg(client_socket, msg, addr=complete_addr) # init connexion between imu and client
@@ -34,8 +35,9 @@ def compute_response(data:dict, client_socket, filter):
     velocity = filter.calculate_velocity(data['SPEED'], data['DIRECTION'])
     filter.update(np.concatenate((velocity, np.array(data["ACCELERATION"]))))
     next_pos = filter.update_position(velocity=x_estimated[:3], acceleration=x_estimated[3:6])
-
+    print("next_pos:", next_pos)
     response = array_to_reponse(next_pos)
+    # print("Response: ",response)
     print("next pos as str", next_pos)
     print('real next pos', data["TRUE POSITION"])
     send_msg(client_socket, response)
@@ -70,7 +72,7 @@ def read(client_socket, address="127.0.0.1", port=4242):
                 compute_response(parsed, client_socket, filter)
                 parsed = get_dict()
                 counter += 1
-                if counter > 2:
+                if counter > 3:
                     exit(0)
             else:
                 for key in parsed.keys():
