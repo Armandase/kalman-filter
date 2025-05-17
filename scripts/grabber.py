@@ -15,7 +15,7 @@ def send_msg(client_socket, msg, addr=("127.0.0.1", 4242)):
 
 def connect(addr="127.0.0.1", port=4242):
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    client_socket.settimeout(10.0)
+    client_socket.settimeout(3.0)
     complete_addr = (addr, port)
     msg = "READY"
     send_msg(client_socket, msg, addr=complete_addr) # init connexion between imu and client
@@ -27,7 +27,7 @@ def connect(addr="127.0.0.1", port=4242):
 def compute_response(data:dict, client_socket, filter):
     if filter is None:
         filter = KalmanFilter(direction=data['DIRECTION'], acceleration=data["ACCELERATION"], speed=data['SPEED'], true_pos=data["TRUE POSITION"])
-    
+        print("estim_x:", filter.estim_x)
     # response = array_to_reponse(data["TRUE POSITION"])
     # print("next pos SEND", response)
 
@@ -35,12 +35,13 @@ def compute_response(data:dict, client_socket, filter):
     velocity = filter.calculate_velocity(data['SPEED'], data['DIRECTION'])
     filter.update(np.concatenate((velocity, np.array(data["ACCELERATION"]))))
     next_pos = filter.update_position(velocity=x_estimated[:3], acceleration=x_estimated[3:6])
-    print("next_pos:", next_pos)
+    # print("next_pos:", next_pos)
     response = array_to_reponse(next_pos)
     # print("Response: ",response)
-    print("next pos as str", next_pos)
-    print('real next pos', data["TRUE POSITION"])
+    # print("next pos as str", next_pos)
+    # print('real next pos', data["TRUE POSITION"])
     send_msg(client_socket, response)
+    return filter
 
 def get_dict():
     return  {
@@ -61,18 +62,18 @@ def get_empty_dict():
 def read(client_socket, address="127.0.0.1", port=4242):
     parsed = get_dict()
     history = get_empty_dict()
-    filter = None
     counter = 0
+    filter = None
     while True:
         try:
             data, server = client_socket.recvfrom(1024)
             data_decode:str = data.decode()
             print(f"Received data: {data_decode}")
             if "MSG_END" in data_decode:
-                compute_response(parsed, client_socket, filter)
+                filter = compute_response(parsed, client_socket, filter)
                 parsed = get_dict()
                 counter += 1
-                if counter > 3:
+                if counter > 20:
                     exit(0)
             else:
                 for key in parsed.keys():
