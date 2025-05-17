@@ -31,7 +31,9 @@ def compute_response(data:dict, client_socket, filter):
     # response = array_to_reponse(data["TRUE POSITION"])
     # print("next pos SEND", response)
 
+    filter.update_data(direction=data['DIRECTION'], acceleration=data["ACCELERATION"], speed=data['SPEED'], true_pos=data["TRUE POSITION"])
     x_estimated = filter.predict()
+    print("\nx_estimated:",x_estimated)
     velocity = filter.calculate_velocity(data['SPEED'], data['DIRECTION'])
     filter.update(np.concatenate((velocity, np.array(data["ACCELERATION"]))))
     next_pos = filter.update_position(velocity=x_estimated[:3], acceleration=x_estimated[3:6])
@@ -73,7 +75,7 @@ def read(client_socket, address="127.0.0.1", port=4242):
                 filter = compute_response(parsed, client_socket, filter)
                 parsed = get_dict()
                 counter += 1
-                if counter > 20:
+                if counter > 2:
                     exit(0)
             else:
                 for key in parsed.keys():

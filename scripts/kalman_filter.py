@@ -34,6 +34,7 @@ class KalmanFilter():
         self.P = np.eye(9) # error covariance matrix
         self.pred_P = np.eye(3) # prediction of the error covariance matrix
 
+        self.speed = speed
         velocity = self.calculate_velocity(speed, direction)
         # print(velocity)
         self.estim_x = np.concatenate((true_pos, velocity, acceleration)) # [px, py, pz, vx, vy, vz, accelx, accely, accelz]
@@ -79,3 +80,17 @@ class KalmanFilter():
 
         velocity = speed * np.array(direction)
         return velocity
+    
+    def update_data(self, direction, acceleration, speed, true_pos):
+        """
+        Update the filter with the new data sent
+        """
+        print("self speed", self.speed)
+        print("speed", speed)
+        print("direction :", direction)
+        # if speed != None:
+        #     new_velocity = self.calculate_velocity(speed, direction)
+        # else:
+        new_velocity = self.calculate_velocity(self.speed, direction)
+        self.estim_x = np.concatenate((true_pos, velocity, acceleration)) # [px, py, pz, vx, vy, vz, accelx, accely, accelz]
+        self.pred_x = np.concatenate((true_pos, velocity, acceleration)) # [px, py, pz, vx, vy, vz, accelx, accely, accelz]
