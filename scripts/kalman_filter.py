@@ -36,10 +36,8 @@ class KalmanFilter():
 
         self.speed = speed
         velocity = self.calculate_velocity(speed, direction)
-        # print(velocity)
         self.estim_x = np.concatenate((true_pos, velocity, acceleration)) # [px, py, pz, vx, vy, vz, accelx, accely, accelz]
         self.pred_x = np.concatenate((true_pos, velocity, acceleration)) # [px, py, pz, vx, vy, vz, accelx, accely, accelz]
-        # print("x : ", self.estim_x)
         self.pos = np.array(true_pos) # position
         self.velocity = None # velocity
 
@@ -88,9 +86,7 @@ class KalmanFilter():
         print("self speed", self.speed)
         print("speed", speed)
         print("direction :", direction)
-        # if speed != None:
-        #     new_velocity = self.calculate_velocity(speed, direction)
-        # else:
+        true_pos = self.pos
         new_velocity = self.calculate_velocity(self.speed, direction)
-        self.estim_x = np.concatenate((true_pos, velocity, acceleration)) # [px, py, pz, vx, vy, vz, accelx, accely, accelz]
-        self.pred_x = np.concatenate((true_pos, velocity, acceleration)) # [px, py, pz, vx, vy, vz, accelx, accely, accelz]
+        self.estim_x = np.concatenate((true_pos, new_velocity, acceleration)) # [px, py, pz, vx, vy, vz, accelx, accely, accelz]
+        self.pred_x = np.concatenate((true_pos, new_velocity, acceleration)) # [px, py, pz, vx, vy, vz, accelx, accely, accelz]
