@@ -50,6 +50,7 @@ def get_empty_dict():
         "SPEED":[],
         "ACCELERATION":[],
         "DIRECTION":[],
+        "ESTIMATED POSITION":[],
     }
 
 def read(client_socket, address="127.0.0.1", port=4242):
@@ -64,6 +65,8 @@ def read(client_socket, address="127.0.0.1", port=4242):
             print(f"Received data: {data_decode}")
             if "MSG_END" in data_decode:
                 filter = compute_response(parsed, client_socket, filter)
+                if filter is not None:
+                    history["ESTIMATED POSITION"].append(filter.estim_x[:3].tolist())
                 parsed = get_dict()
                 # counter += 1
                 # if counter > 5000:
