@@ -23,15 +23,20 @@ def connect(addr="127.0.0.1", port=4242):
 
 
 def compute_response(data:dict, client_socket, filter):
+
+    # If no Filter class is created, create one
     if filter is None:
         filter = KalmanFilter(direction=data['DIRECTION'], acceleration=data["ACCELERATION"], speed=data['SPEED'], true_pos=data["TRUE POSITION"])
+        filter.measurement_update(direction=data['DIRECTION'], speed=data['SPEED'], true_pos=data["TRUE POSITION"])
 
-    filter.update_data(direction=data['DIRECTION'], acceleration=data["ACCELERATION"], speed=data['SPEED'], true_pos=data["TRUE POSITION"])
-    x_estimated = filter.predict()
-    print("\nx_estimated:",x_estimated)
-    velocity = filter.estim_x[3:6]
-    filter.update(np.concatenate((velocity, np.array(data["ACCELERATION"]))))
-    next_pos = filter.update_position(velocity=x_estimated[3:6], acceleration=x_estimated[6:9])
+    # if data["TRUE POSITION"]:
+    #     print("True position:", data["TRUE POSITION"])
+    #     # Update the filter with the true position
+    
+    
+    # Update the filter
+    next_pos = filter.time_update(acceleration=data["ACCELERATION"])
+
     response = array_to_reponse(next_pos)
     send_msg(client_socket, response)
     return filter
@@ -65,6 +70,7 @@ def read(client_socket, address="127.0.0.1", port=4242):
             print(f"Received data: {data_decode}")
             if "MSG_END" in data_decode:
                 filter = compute_response(parsed, client_socket, filter)
+                history["TRUE POSITION"].append(parsed["TRUE POSITION"])
                 if filter is not None:
                     history["ESTIMATED POSITION"].append(filter.estim_x[:3].tolist())
                 parsed = get_dict()

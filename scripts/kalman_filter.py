@@ -61,12 +61,12 @@ class KalmanFilter():
 
         # Process noise covariance matrix
         self.Q = np.diag([
-            var_pos[0], var_pos[1], var_pos[2],
-            var_vel[0], var_vel[1], var_vel[2]
+            var_pos, var_pos, var_pos,
+            var_vel, var_vel, var_vel
         ])
 
 
-    def measurement_update(self, direction, acceleration, speed, true_pos):
+    def measurement_update(self, direction, speed, true_pos):
         """
         Update the measurement vector with the current acceleration and direction
         Here it is each 3 seconds when we receive a new GPS position
@@ -88,14 +88,20 @@ class KalmanFilter():
         self.P = (self.I - self.K @ self.H) @ self.prev_P
 
 
-    def time_update(self):
+    def time_update(self, acceleration):
         """ Update the state vector and covariance matrix based on the model"""
+        
+        # Update the control input vector each time step
+        self.U = np.array(acceleration)
         
         # Project the state ahead
         self.estim_x = self.A @ self.prev_estim_x + self.B @ self.U
         
         # Project the error covariance ahead
         self.P = self.A @ self.prev_P @ self.A.T + self.Q
+        
+        # Return the estimated state vector for the program to send the next position
+        return self.estim_x[0:3]
     
     
     def init_state_vector(self, direction, speed, true_pos):
