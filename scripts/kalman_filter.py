@@ -6,16 +6,13 @@ class KalmanFilter():
         # print(f"Direction : {direction},\nacceleration : {acceleration},\nspeed : {speed},\ntrue_pos: {true_pos}")
         
         
-        direction_vector = self.euleur_to_vector(direction)
-        
-        
         # Converting speed from km/h to m/s
         speed_in_ms = speed[0] / 3.6
         
         # estimated state vector
         self.estim_x = np.zeros(6)
         # Put the velocity in the state vector
-        self.init_state_vector(direction_vector, speed_in_ms, true_pos)
+        self.init_state_vector(direction, speed_in_ms, true_pos)
         
         # previous estimated state vector
         self.prev_estim_x = self.estim_x.copy()

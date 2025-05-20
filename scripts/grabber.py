@@ -68,7 +68,7 @@ def read(client_socket, address="127.0.0.1", port=4242):
             data, server = client_socket.recvfrom(1024)
             data_decode:str = data.decode()
             print(f"Received data: {data_decode}")
-            if "MSG_END" in data_decode and counter < 100000:
+            if "MSG_END" in data_decode:
                 filter = compute_response(parsed, client_socket, filter)
                 history["TRUE POSITION"].append(parsed["TRUE POSITION"])
                 if filter is not None:

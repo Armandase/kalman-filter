@@ -8,8 +8,12 @@ def display_history(history):
 
     ax1 = fig.add_subplot(2, 3, 1, projection='3d')
     true_pos = np.array(history["TRUE POSITION"]).T
-    ax1.plot3D(true_pos[0], true_pos[1], true_pos[2], c='red')
-    ax1.set_title("True Position")
+    ax1.plot3D(true_pos[0], true_pos[1], true_pos[2], c='red', label="True Position")
+    if "ESTIMATED POSITION" in history and len(history["ESTIMATED POSITION"]) > 0:
+        estimated_pos = np.array(history["ESTIMATED POSITION"]).T
+        ax1.plot3D(estimated_pos[0], estimated_pos[1], estimated_pos[2], c='blue', label="Estimated Position")
+    ax1.set_title("True & Estimated Position")
+    ax1.legend()
 
     ax3 = fig.add_subplot(2, 3, 2)
     acceleration = np.array(history['ACCELERATION']).T
@@ -26,13 +30,6 @@ def display_history(history):
     ax4.plot(direction[2], label="Z")
     ax4.set_title("Direction")
     ax4.legend()
-
-    # Add estimated position plot
-    if "ESTIMATED POSITION" in history and len(history["ESTIMATED POSITION"]) > 0:
-        ax5 = fig.add_subplot(2, 3, 5, projection='3d')
-        estimated_pos = np.array(history["ESTIMATED POSITION"]).T
-        ax5.plot3D(estimated_pos[0], estimated_pos[1], estimated_pos[2], c='blue')
-        ax5.set_title("Estimated Position")
 
     plt.tight_layout()
     plt.show()
