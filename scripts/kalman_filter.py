@@ -8,6 +8,7 @@ class KalmanFilter():
         
         # Converting speed from km/h to m/s
         speed_in_ms = speed[0] / 3.6
+        self.speed = speed_in_ms
         
         # estimated state vector
         self.estim_x = np.zeros(6)
@@ -18,10 +19,10 @@ class KalmanFilter():
         self.prev_estim_x = self.estim_x.copy()
         
         # Kalman gain
-        self.K = None
+        self.K = np.zeros((6, 6))
         
          # covariance matrix
-        self.P = np.eye(6) * 0.1
+        self.P = np.eye(6) * 0.01
         
         # previous covariance matrix
         self.prev_P = np.eye(6) * 0.1
@@ -56,7 +57,7 @@ class KalmanFilter():
         ])
     
         # Process noise covariance matrix
-        sigma_pos = 0.5 * (DELTA_T ** 2) * ACCEL_NOISE
+        sigma_pos = 0.5 * (DELTA_T ** 2) * GYRO_NOISE
         sigma_vel = DELTA_T * ACCEL_NOISE
         
         # Calculating variance for position and velocity
@@ -70,31 +71,32 @@ class KalmanFilter():
         ])
 
 
-    def measurement_update(self, direction, speed, true_pos):
+    def measurement_update(self, direction, true_pos):
         """
         Update the measurement vector with the current acceleration and direction
         Here it is each 3 seconds when we receive a new GPS position
         """
         
-        # Convert speed from km/h to m/s
-        speed_in_ms = speed[0] / 3.6
-        
         direction_vector = self.euleur_to_vector(direction)
 
         # Update the measurement vector
         self.Z[0:3] = np.array(true_pos)
-        self.Z[3:6] = self.calculate_velocity(speed_in_ms, direction_vector)
+        self.Z[3:6] = self.calculate_velocity(self.speed, direction_vector)
+        print("Z matrice", self.Z)
 
         # Measurement update
         self.K = self.prev_P @ self.H.T @ np.linalg.inv(self.H @ self.prev_P @ self.H.T + self.R)
+        print("Kalman Gain", self.K)
         
         # Update the state estimate
         self.prev_estim_x = self.estim_x.copy()
         self.estim_x = self.prev_estim_x + self.K @ (self.Z - self.H @ self.prev_estim_x)
+        print("Estimated state vector", self.estim_x)
         
         # Update the covariance matrix
         self.prev_P = self.P.copy()
         self.P = (self.I - self.K @ self.H) @ self.prev_P
+        print("Covariance matrix", self.P)
 
 
     def time_update(self, acceleration):

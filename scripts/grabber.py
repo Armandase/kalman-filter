@@ -22,17 +22,15 @@ def connect(addr="127.0.0.1", port=4242):
     return client_socket
 
 
-def compute_response(data:dict, client_socket, filter):
+def compute_response(data:dict, client_socket, filter, counter):
 
     # If no Filter class is created, create one
     if filter is None:
         filter = KalmanFilter(direction=data['DIRECTION'], acceleration=data["ACCELERATION"], speed=data['SPEED'], true_pos=data["TRUE POSITION"])
-        filter.measurement_update(direction=data['DIRECTION'], speed=data['SPEED'], true_pos=data["TRUE POSITION"])
-
-    # if data["TRUE POSITION"]:
-    #     print("True position:", data["TRUE POSITION"])
-    #     # Update the filter with the true position
-    
+    if counter % 3000 == 0 or counter == 0:
+        print("Pos update", data["POSITION"])
+        filter.measurement_update(direction=data['DIRECTION'], true_pos=data["POSITION"])
+        print("Measurement update")
     
     # Update the filter
     next_pos = filter.time_update(acceleration=data["ACCELERATION"])
@@ -43,6 +41,7 @@ def compute_response(data:dict, client_socket, filter):
 
 def get_dict():
     return  {
+        "POSITION":[0, 0, 0],
         "TRUE POSITION":[0, 0, 0],
         "SPEED":[0],
         "ACCELERATION":[0, 0, 0],
@@ -56,6 +55,7 @@ def get_empty_dict():
         "ACCELERATION":[],
         "DIRECTION":[],
         "ESTIMATED POSITION":[],
+        "POSITION":[],
     }
 
 def read(client_socket, address="127.0.0.1", port=4242):
@@ -68,8 +68,8 @@ def read(client_socket, address="127.0.0.1", port=4242):
             data, server = client_socket.recvfrom(1024)
             data_decode:str = data.decode()
             print(f"Received data: {data_decode}")
-            if "MSG_END" in data_decode:
-                filter = compute_response(parsed, client_socket, filter)
+            if "MSG_END" in data_decode and counter < 3010:
+                filter = compute_response(parsed, client_socket, filter, counter)
                 history["TRUE POSITION"].append(parsed["TRUE POSITION"])
                 if filter is not None:
                     history["ESTIMATED POSITION"].append(filter.estim_x[:3].tolist())
