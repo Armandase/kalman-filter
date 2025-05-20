@@ -82,21 +82,21 @@ class KalmanFilter():
         # Update the measurement vector
         self.Z[0:3] = np.array(true_pos)
         self.Z[3:6] = self.calculate_velocity(self.speed, direction_vector)
-        print("Z matrice", self.Z)
+        # print("Z matrice", self.Z)
 
         # Measurement update
         self.K = self.prev_P @ self.H.T @ np.linalg.inv(self.H @ self.prev_P @ self.H.T + self.R)
-        print("Kalman Gain", self.K)
+        # print("Kalman Gain", self.K)
         
         # Update the state estimate
         self.prev_estim_x = self.estim_x.copy()
         self.estim_x = self.prev_estim_x + self.K @ (self.Z - self.H @ self.prev_estim_x)
-        print("Estimated state vector", self.estim_x)
+        # print("Estimated state vector", self.estim_x)
         
         # Update the covariance matrix
         self.prev_P = self.P.copy()
         self.P = (self.I - self.K @ self.H) @ self.prev_P
-        print("Covariance matrix", self.P)
+        # print("Covariance matrix", self.P)
 
 
     def time_update(self, acceleration):

@@ -27,7 +27,7 @@ def compute_response(data:dict, client_socket, filter, counter):
     # If no Filter class is created, create one
     if filter is None:
         filter = KalmanFilter(direction=data['DIRECTION'], acceleration=data["ACCELERATION"], speed=data['SPEED'], true_pos=data["TRUE POSITION"])
-    if counter % 3000 == 0 or counter == 0:
+    if data["POSITION"] != [0,0,0]:
         print("Pos update", data["POSITION"])
         filter.measurement_update(direction=data['DIRECTION'], true_pos=data["POSITION"])
         print("Measurement update")
@@ -68,7 +68,7 @@ def read(client_socket, address="127.0.0.1", port=4242):
             data, server = client_socket.recvfrom(1024)
             data_decode:str = data.decode()
             print(f"Received data: {data_decode}")
-            if "MSG_END" in data_decode and counter < 3010:
+            if "MSG_END" in data_decode:
                 filter = compute_response(parsed, client_socket, filter, counter)
                 history["TRUE POSITION"].append(parsed["TRUE POSITION"])
                 if filter is not None:
