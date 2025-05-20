@@ -68,15 +68,13 @@ def read(client_socket, address="127.0.0.1", port=4242):
             data, server = client_socket.recvfrom(1024)
             data_decode:str = data.decode()
             print(f"Received data: {data_decode}")
-            if "MSG_END" in data_decode:
+            if "MSG_END" in data_decode and counter < 3000:
                 filter = compute_response(parsed, client_socket, filter)
                 history["TRUE POSITION"].append(parsed["TRUE POSITION"])
                 if filter is not None:
                     history["ESTIMATED POSITION"].append(filter.estim_x[:3].tolist())
                 parsed = get_dict()
-                # counter += 1
-                # if counter > 5000:
-                #     exit(0)
+                counter += 1
             else:
                 for key in parsed.keys():
                     if key in data_decode:
