@@ -3,7 +3,11 @@ from constants import DELTA_T, ACCEL_NOISE, GYRO_NOISE, GPS_NOISE, VARIANCE_ACCE
 
 class KalmanFilter():
     def __init__(self, direction, acceleration, speed, true_pos):
-        print(f"Direction : {direction},\nacceleration : {acceleration},\nspeed : {speed},\ntrue_pos: {true_pos}")
+        # print(f"Direction : {direction},\nacceleration : {acceleration},\nspeed : {speed},\ntrue_pos: {true_pos}")
+        
+        
+        direction_vector = self.euleur_to_vector(direction)
+        
         
         # Converting speed from km/h to m/s
         speed_in_ms = speed[0] / 3.6
@@ -11,7 +15,7 @@ class KalmanFilter():
         # estimated state vector
         self.estim_x = np.zeros(6)
         # Put the velocity in the state vector
-        self.init_state_vector(direction, speed_in_ms, true_pos)
+        self.init_state_vector(direction_vector, speed_in_ms, true_pos)
         
         # previous estimated state vector
         self.prev_estim_x = self.estim_x.copy()
@@ -40,21 +44,20 @@ class KalmanFilter():
         #state transition matrix
         self.A = np.eye(6)
         self.A[0:3, 3:6] = np.eye(3) * DELTA_T
-        print(self.A)
-
+    
         # Control input vector
         self.U = np.array(acceleration)
         
         # COntrol input matrix
         self.B = np.array([
-            [0.5 * DELTA_T ** 2, 0, 0],
-            [0, 0.5 * DELTA_T ** 2, 0],
-            [0, 0, 0.5 * DELTA_T ** 2],
+            [0.5 * (DELTA_T ** 2), 0, 0],
+            [0, 0.5 * (DELTA_T ** 2), 0],
+            [0, 0, 0.5 * (DELTA_T ** 2)],
             [DELTA_T, 0, 0],
             [0, DELTA_T, 0],
             [0, 0, DELTA_T]
         ])
-
+    
         # Process noise covariance matrix
         sigma_pos = 0.5 * (DELTA_T ** 2) * ACCEL_NOISE
         sigma_vel = DELTA_T * ACCEL_NOISE
@@ -62,7 +65,7 @@ class KalmanFilter():
         # Calculating variance for position and velocity
         var_pos = sigma_pos ** 2
         var_vel = sigma_vel ** 2
-
+    
         # Process noise covariance matrix
         self.Q = np.diag([
             var_pos, var_pos, var_pos,
@@ -78,10 +81,12 @@ class KalmanFilter():
         
         # Convert speed from km/h to m/s
         speed_in_ms = speed[0] / 3.6
+        
+        direction_vector = self.euleur_to_vector(direction)
 
         # Update the measurement vector
         self.Z[0:3] = np.array(true_pos)
-        self.Z[3:6] = self.calculate_velocity(speed_in_ms, direction)
+        self.Z[3:6] = self.calculate_velocity(speed_in_ms, direction_vector)
 
         # Measurement update
         self.K = self.prev_P @ self.H.T @ np.linalg.inv(self.H @ self.prev_P @ self.H.T + self.R)
@@ -116,14 +121,31 @@ class KalmanFilter():
     def init_state_vector(self, direction, speed, true_pos):
         """ Initialize the state vector with the given true position and velocity"""
         
+        direction_vector = self.euleur_to_vector(direction)
+        
         self.estim_x[0:3] = np.array(true_pos)
-        self.estim_x[3:6] = self.calculate_velocity(speed, direction)
+        self.estim_x[3:6] = self.calculate_velocity(speed, direction_vector)
     
     
     def calculate_velocity(self, speed, direction):
         """ Calculate the velocity based on the current state vector """
         
-        direction = np.array(direction)
-        norm = np.linalg.norm(direction)
-        velocity = speed * ( direction / norm )
+        direction_vector = self.euleur_to_vector(direction)
+        
+        direction = np.array(direction_vector)
+        norm = np.linalg.norm(direction_vector)
+        velocity = speed * ( direction_vector / norm )
         return velocity
+    
+    def euleur_to_vector(self, euler_angles):
+        """ Convert Euler angles to a direction vector """
+        
+        # Unpack the Euler angles
+        roll, pitch, yaw = np.radians(euler_angles)
+        
+        # Calculate the direction vector
+        x = np.cos(pitch) * np.cos(yaw)
+        y = np.cos(pitch) * np.sin(yaw)
+        z = np.sin(pitch)
+        
+        return np.array([x, y, z])
