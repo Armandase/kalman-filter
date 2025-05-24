@@ -39,6 +39,21 @@ def display_history(history):
     plt.tight_layout()
     plt.show()
 
+def display_pos_offset(history):
+    fig = plt.figure(figsize=(10, 8))
+    ax1 = fig.add_subplot(2, 2, 1, projection='3d')
+    true_pos = np.array(history["TRUE POSITION"]).T
+    pred_pos = np.array(history["PRED POSITION"]).T
+    ax1.plot3D(true_pos[0], true_pos[1], true_pos[2], c='green')
+    ax1.plot3D(pred_pos[0], pred_pos[1], pred_pos[2], c='red')
+    ax1.set_title("True Position vs Predicted Position")
+    ax1.set_xlabel("X")
+    ax1.set_ylabel("Y")
+    ax1.set_zlabel("Z")
+    ax1.legend(["True Position", "Predicted Position"])
+    plt.tight_layout()
+    plt.show()    
+
 def array_to_reponse(data):
     response = ""
     for val in data:
@@ -47,3 +62,14 @@ def array_to_reponse(data):
     response = response.removesuffix(" ")
     print(response)
     return response
+
+def euler_angles_intergrate(angles):
+    angular_velocity = 1 / np.cos(angles[1])
+
+    tmp = np.array([
+        [0, np.sin(angles[-1]), np.cos(angles[-1])],
+        [0, np.cos(angles[-1]) * np.cos(angles[1]), -np.sin(angles[-1]) * np.cos(angles[1])],
+        [np.cos(angles[1]), np.sin(angles[-1]) * np.sin(angles[1]), np.cos(angles[-1]) * np.sin(angles[1])]
+    ])
+    gyro = angular_velocity * tmp
+    return gyro

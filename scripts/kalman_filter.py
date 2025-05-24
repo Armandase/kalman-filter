@@ -22,25 +22,23 @@ class KalmanFilter():
             ACCEL_NOISE, ACCEL_NOISE, ACCEL_NOISE  # acceleration x, y, z
         ])
         # self.R = np.diag([
-        #     0.01,        # speed variance (σ=0.1²)
-        #     1e-6, 1e-6, 1e-6,   # accelerometer noise (σ=0.001²)
-        #     1e-4, 1e-4, 1e-4    # gyroscope/direction noise (σ=0.01²)
+        #     VARIANCE_ACCEL, VARIANCE_ACCEL, VARIANCE_ACCEL,   # accelerometer noise (σ=0.001²)
+        #     VARIANCE_GYRO, VARIANCE_GYRO, VARIANCE_GYRO    # gyroscope/direction noise (σ=0.01²)
         # ])
         self.R = np.diag([
-            VARIANCE_ACCEL, VARIANCE_ACCEL, VARIANCE_ACCEL,   # accelerometer noise (σ=0.001²)
-            VARIANCE_GYRO, VARIANCE_GYRO, VARIANCE_GYRO    # gyroscope/direction noise (σ=0.01²)
+            ACCEL_NOISE, ACCEL_NOISE, ACCEL_NOISE,   # accelerometer noise (σ=0.001²)
+            GYRO_NOISE, GYRO_NOISE, GYRO_NOISE    # gyroscope/direction noise (σ=0.01²)
         ])
 
         self.P = np.eye(9) # error covariance matrix
         self.pred_P = np.eye(3) # prediction of the error covariance matrix
 
         velocity = self.calculate_velocity(speed, direction)
-        # print(velocity)
         self.estim_x = np.concatenate((true_pos, velocity, acceleration)) # [px, py, pz, vx, vy, vz, accelx, accely, accelz]
         self.pred_x = np.concatenate((true_pos, velocity, acceleration)) # [px, py, pz, vx, vy, vz, accelx, accely, accelz]
-        # print("x : ", self.estim_x)
         self.pos = np.array(true_pos) # position
-        self.velocity = None # velocity
+        self.velocity = velocity # velocity
+        self.speed = float(speed[0]) # speed
 
     def predict(self):
         self.pred_x = self.A @ self.estim_x
@@ -55,7 +53,9 @@ class KalmanFilter():
         K = self.pred_P @ self.H.T @ np.linalg.inv(self.H @ self.pred_P @ self.H.T + self.R)
 
         self.estim_x = self.pred_x + K @ (z - self.H @ self.pred_x)
-        self.P = self.pred_P - K @ self.H @ self.pred_P
+        # self.P = self.pred_P - K @ self.H @ self.pred_P
+        I = np.eye(self.P.shape[0])
+        self.P = (I - K @ self.H) @ self.pred_P
 
     def update_position(self, velocity, acceleration, delta_t=DELTA_T):
         # self.velocity = [speed * d for d in direction]
@@ -77,5 +77,19 @@ class KalmanFilter():
         - velocity: A vector representing the velocity.
         """
 
-        velocity = speed * np.array(direction)
+        if not isinstance(speed, list) or len(speed) != 1:
+            raise ValueError("Speed should be a list with one element.")
+
+        if speed[0] != 0:
+            self.speed = float(speed[0])
+        velocity = self.speed * np.array(direction)
         return velocity
+    
+    # possible conversion en quaternion
+    # nb:
+    # A = Identité(4*4) + delta_t * Beta 
+    # 4 car les angles sont convertis en quaternion (4 valeurs qui sont (x, y, z, w))
+    # Beta étant matrice de roation obtenu a partir de la conversion d'euler
+    # 
+    # Q = bruit dans le système
+    # P = identité mais l'algo va mettre a jour la matrice de covariance 
