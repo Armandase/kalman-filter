@@ -60,7 +60,6 @@ def array_to_reponse(data):
         response += "{:.6f}".format(val)
         response += " "
     response = response.removesuffix(" ")
-    print(response)
     return response
 
 def euler_angles_intergrate(angles):
@@ -73,3 +72,53 @@ def euler_angles_intergrate(angles):
     ])
     gyro = angular_velocity * tmp
     return gyro
+
+def rotation_matrix_from_euler(roll, pitch, yaw):
+    # yaw is psi, pitch is theta and roll is phi.
+
+    # rotation around Z
+    rot_psi = np.array([
+        [np.cos(roll), -np.sin(roll), 0],
+        [np.sin(roll), np.cos(roll), 0],
+        [0, 0, 1],])
+
+    # rotation around N which is the X axis after rot_psi
+    rot_theta = np.array([
+        [1, 0 ,0],
+        [0, np.cos(pitch), -np.sin(pitch)],
+        [0, np.sin(pitch), np.cos(pitch)]])
+    
+    # rotation around Z'
+    rot_phi = np.array([
+        [np.cos(yaw), -np.sin(yaw), 0],
+        [np.sin(yaw), np.cos(yaw), 0],
+        [0, 0, 1],])
+    
+    # apply the 3 rotation
+    return rot_psi @ rot_theta @ rot_phi
+
+# return the same thing as rotation_matrix_from_euler but this way is a bit slower (based on computation time)
+def change_of_basis(psi, theta, phi):
+    rot = np.array([
+            np.cos(psi) * np.cos(phi) - np.sin(psi) * np.cos(theta) * np.sin(phi), -np.cos(psi) * np.sin(phi) - np.sin(psi) * np.cos(theta) * np.cos(phi), np.sin(psi) * np.sin(theta),
+            np.sin(psi) * np.cos(phi) + np.cos(psi) * np.cos(theta) * np.sin(phi), -np.sin(psi) * np.sin(phi) + np.cos(psi) * np.cos(theta) * np.cos(phi), -np.cos(psi) * np.sin(theta),
+            np.sin(theta) * np.sin(phi), np.sin(theta) * np.cos(phi), np.cos(theta)
+    ])
+    return rot 
+
+def update_pos(pos, acceleration, direction, delta_t, speed):
+    rotation_matrix = rotation_matrix_from_euler(*direction)
+    scaled_acceleration = acceleration * speed
+    new_pos = pos + rotation_matrix @ scaled_acceleration * delta_t
+    return new_pos
+
+if __name__ == '__main__':
+    gps_point = np.array([1, 2, 3])
+    euler_angle = np.array([0.1, 0.2, 0.3])
+
+    print("GPS Point:", gps_point)
+    print("Euler Angles:", euler_angle)
+    acceleration = np.array([1, 0, 0])
+    delta_t = 0.01
+    next_pos = update_pos(gps_point, acceleration, euler_angle, delta_t)
+    print("Next Position:", next_pos)

@@ -6,6 +6,7 @@ import numpy as np
 from utils import display_history, array_to_reponse, display_pos_offset
 from kalman_filter import KalmanFilter
 from real_kalman import KakalmanFilter
+from constants import DELTA_T 
 
 
 def send_msg(client_socket, msg, addr=("127.0.0.1", 4242)):
@@ -28,24 +29,22 @@ def compute_response(data:dict, client_socket, filter):
     if filter is None:
         # filter = KalmanFilter(direction=data['DIRECTION'], acceleration=data["ACCELERATION"], speed=data['SPEED'], true_pos=data["TRUE POSITION"])
         filter = KakalmanFilter(true_pos=data["TRUE POSITION"], 
-                            acceleration=data["ACCELERATION"], 
-                            speed=data['SPEED'], 
-                            direction=data['DIRECTION'])
+                                acceleration=data["ACCELERATION"], 
+                                speed=data['SPEED'], 
+                                direction=data['DIRECTION'])
 
-    
     # response = array_to_reponse(data["TRUE POSITION"])
     # x_estimated = filter.predict()
+
     filter.predict()
-    x_estimated = filter.x
-    print("x_estimated:", x_estimated)
-    velocity = filter.calculate_velocity(data['SPEED'], data['DIRECTION'])
-    filter.update(np.concatenate((velocity, np.array(data["ACCELERATION"]))))
-    next_pos = filter.update_position(velocity=x_estimated[:3], acceleration=x_estimated[3:6])
-    # print("next_pos:", next_pos)
+
+    # filter.update(np.concatenate((data["TRUE POSITION"], data["DIRECTION"], np.array(data["ACCELERATION"]))))
+    filter.update(np.concatenate((data["DIRECTION"], np.array(data["ACCELERATION"]))))
+
+    next_pos = filter.update_position(data['SPEED'], delta_t=DELTA_T)
+    print("Next pos: ", next_pos)
+    print("True pos: ", data["TRUE POSITION"])
     response = array_to_reponse(next_pos)
-    # print("Response: ",response)
-    print("next pos as str", next_pos)
-    print('real next pos', data["TRUE POSITION"])
     send_msg(client_socket, response)
     return filter
 
@@ -65,14 +64,14 @@ def get_empty_dict():
         "DIRECTION":[],
     }
 
-def read(client_socket, address="127.0.0.1", port=4242):
+def read(client_socket):
     parsed = get_dict()
     history = get_empty_dict()
     filter = None
     counter = 0
     while True:
         try:
-            data, server = client_socket.recvfrom(1024)
+            data, _ = client_socket.recvfrom(1024)
             # check if the server is still available
             if not data or data == b'':
                 exit(0)
@@ -81,9 +80,9 @@ def read(client_socket, address="127.0.0.1", port=4242):
             if "MSG_END" in data_decode:
                 filter = compute_response(parsed, client_socket, filter)
                 # check if pred pos is in history
-                # if "PRED POSITION" not in history:
-                    # history["PRED POSITION"] = []
-                # history["PRED POSITION"].append(filter.pos)
+                if "PRED POSITION" not in history:
+                    history["PRED POSITION"] = []
+                history["PRED POSITION"].append(filter.pos)
                 parsed = get_dict()
                 counter += 1
                 # if counter > 3:
@@ -102,9 +101,25 @@ def read(client_socket, address="127.0.0.1", port=4242):
 
     return history    
 
-def main(address="127.0.0.1", port=4242, visual=False):
+def launch_imu():
+    # launch like that:
+    # ./imu-sensor-stream-linux -s 42 -d 10 -p 4242 --debug
+    import os
+    import subprocess
+    os.system("pkill imu-sensor-stream-linux")  # Kill any existing imu sensor stream
+    command = "./imu-sensor-stream-linux -s 42 -d 10 -p 4242 --debug"
+    process = subprocess.Popen(command, shell=True)
+    if process.poll() is not None:
+        print("Failed to launch imu sensor stream.")
+        return
+    time.sleep(1)  # Wait for the process to start
+    print("IMU sensor stream launched.")
+
+def main(address="127.0.0.1", port=4242, visual=False, imu=False):
+    if imu:
+        launch_imu()
     client_socket = connect(addr=address, port=port)
-    history = read(client_socket, address, port)
+    history = read(client_socket)
     if visual:
         # display_history(history)
         display_pos_offset(history)
@@ -114,6 +129,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--address', '-a', default="127.0.0.1", type=str)
     parser.add_argument('--port', '-p', default=4242, type=int)
-    parser.add_argument('--visual', '-v', action='store_true', help="Display the history of the data")
+    parser.add_argument('--visual', '-v', default=False, action=argparse.BooleanOptionalAction, help="Display the history of the data")
+    parser.add_argument('--imu', default=False, action=argparse.BooleanOptionalAction) # enbale or disable imu
     args = parser.parse_args()
-    main(args.address, args.port, args.visual)
+    main(args.address, args.port, args.visual, args.imu)
