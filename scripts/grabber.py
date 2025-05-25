@@ -10,7 +10,6 @@ from constants import DELTA_T
 
 
 def send_msg(client_socket, msg, addr=("127.0.0.1", 4242)):
-    print("Message:", msg)
     client_socket.sendto(msg.encode('UTF-8'), addr)
     return client_socket
 
@@ -37,11 +36,10 @@ def compute_response(data:dict, client_socket, filter):
     # x_estimated = filter.predict()
 
     filter.predict()
-
     # filter.update(np.concatenate((data["TRUE POSITION"], data["DIRECTION"], np.array(data["ACCELERATION"]))))
     filter.update(np.concatenate((data["DIRECTION"], np.array(data["ACCELERATION"]))))
 
-    next_pos = filter.update_position(data['SPEED'], delta_t=DELTA_T)
+    next_pos = filter.update_position(speed=data['SPEED'], delta_t=DELTA_T)
     print("Next pos: ", next_pos)
     print("True pos: ", data["TRUE POSITION"])
     response = array_to_reponse(next_pos)
@@ -108,12 +106,14 @@ def launch_imu():
     import subprocess
     os.system("pkill imu-sensor-stream-linux")  # Kill any existing imu sensor stream
     command = "./imu-sensor-stream-linux -s 42 -d 10 -p 4242 --debug"
-    process = subprocess.Popen(command, shell=True)
+    gnome_terminal_command = f"gnome-terminal -- bash -c '{command}'"
+    process = subprocess.Popen(gnome_terminal_command, shell=True)
     if process.poll() is not None:
-        print("Failed to launch imu sensor stream.")
+        print("Failed to launch imu sensor stream in GNOME terminal.")
         return
-    time.sleep(1)  # Wait for the process to start
-    print("IMU sensor stream launched.")
+    print("IMU sensor stream launched in GNOME terminal.")
+    sleep_time = 2
+    time.sleep(sleep_time) 
 
 def main(address="127.0.0.1", port=4242, visual=False, imu=False):
     if imu:

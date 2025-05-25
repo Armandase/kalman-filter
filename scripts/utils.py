@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from kalman_filter import KalmanFilter
+from scipy.spatial.transform import Rotation as R
 
 
 def display_history(history):
@@ -62,17 +63,6 @@ def array_to_reponse(data):
     response = response.removesuffix(" ")
     return response
 
-def euler_angles_intergrate(angles):
-    angular_velocity = 1 / np.cos(angles[1])
-
-    tmp = np.array([
-        [0, np.sin(angles[-1]), np.cos(angles[-1])],
-        [0, np.cos(angles[-1]) * np.cos(angles[1]), -np.sin(angles[-1]) * np.cos(angles[1])],
-        [np.cos(angles[1]), np.sin(angles[-1]) * np.sin(angles[1]), np.cos(angles[-1]) * np.sin(angles[1])]
-    ])
-    gyro = angular_velocity * tmp
-    return gyro
-
 def rotation_matrix_from_euler(roll, pitch, yaw):
     # yaw is psi, pitch is theta and roll is phi.
 
@@ -104,10 +94,16 @@ def change_of_basis(psi, theta, phi):
             np.sin(psi) * np.cos(phi) + np.cos(psi) * np.cos(theta) * np.sin(phi), -np.sin(psi) * np.sin(phi) + np.cos(psi) * np.cos(theta) * np.cos(phi), -np.cos(psi) * np.sin(theta),
             np.sin(theta) * np.sin(phi), np.sin(theta) * np.cos(phi), np.cos(theta)
     ])
-    return rot 
+    return rot.reshape((3, 3))
+
+def get_rotation_matrix_from_euler(euler_angles):
+    rot = R.from_euler('yxz', euler_angles, degrees=True)
+    return rot.as_matrix()
 
 def update_pos(pos, acceleration, direction, delta_t, speed):
-    rotation_matrix = rotation_matrix_from_euler(*direction)
+    direction = np.array(direction)
+    # rotation_matrix = rotation_matrix_from_euler(*direction)
+    rotation_matrix = get_rotation_matrix_from_euler(direction)
     scaled_acceleration = acceleration * speed
     new_pos = pos + rotation_matrix @ scaled_acceleration * delta_t
     return new_pos
@@ -120,5 +116,5 @@ if __name__ == '__main__':
     print("Euler Angles:", euler_angle)
     acceleration = np.array([1, 0, 0])
     delta_t = 0.01
-    next_pos = update_pos(gps_point, acceleration, euler_angle, delta_t)
+    next_pos = update_pos(gps_point, acceleration, euler_angle, delta_t, 60/3.6)
     print("Next Position:", next_pos)
