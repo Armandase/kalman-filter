@@ -97,7 +97,7 @@ def change_of_basis(psi, theta, phi):
     return rot.reshape((3, 3))
 
 def get_rotation_matrix_from_euler(euler_angles):
-    rot = R.from_euler('yxz', euler_angles, degrees=True)
+    rot = R.from_euler('xyz', euler_angles, degrees=True)
     return rot.as_matrix()
 
 def update_pos(pos, acceleration, direction, delta_t, speed):
@@ -105,16 +105,46 @@ def update_pos(pos, acceleration, direction, delta_t, speed):
     # rotation_matrix = rotation_matrix_from_euler(*direction)
     rotation_matrix = get_rotation_matrix_from_euler(direction)
     scaled_acceleration = acceleration * speed
-    new_pos = pos + rotation_matrix @ scaled_acceleration * delta_t
+    new_velocity = rotation_matrix @ scaled_acceleration * delta_t
+    new_pos = pos + new_velocity * delta_t + 0.5 * scaled_acceleration * (delta_t ** 2)
     return new_pos
+
+def compute_velocity(acceleration, euler_angles, delta_t):
+    rotation_matrix = get_rotation_matrix_from_euler(euler_angles)
+    velocity = rotation_matrix @ acceleration * delta_t
+    return velocity
+
+def obtain_velocity(acceleration, euler_angles, delta_t):
+    roll = euler_angles[0]
+    pitch = euler_angles[1]
+    yaw = euler_angles[2]
+
+    r_x = np.array([[1, 0, 0],
+                    [0, np.cos(roll), -np.sin(roll)],
+                    [0, np.sin(roll), np.cos(roll)]])
+    r_y = np.array([[np.cos(pitch), 0, np.sin(pitch)],
+                    [0, 1, 0],
+                    [-np.sin(pitch), 0, np.cos(pitch)]])
+    r_z = np.array([[np.cos(yaw), -np.sin(yaw), 0],
+                    [np.sin(yaw), np.cos(yaw), 0],
+                    [0, 0, 1]])
+    r = r_z @ r_y @ r_x
+    a_x = r[0, 0] * acceleration[0] + r[0, 1] * acceleration[1] + r[0, 2] * acceleration[2]
+    a_y = r[1, 0] * acceleration[0] + r[1, 1] * acceleration[1] + r[1, 2] * acceleration[2]
+    a_z = r[2, 0] * acceleration[0] + r[2, 1] * acceleration[1] + r[2, 2] * acceleration[2]
+    velocity = np.array([a_x, a_y, a_z])
+    velocity *= delta_t
+    return velocity
 
 if __name__ == '__main__':
     gps_point = np.array([1, 2, 3])
     euler_angle = np.array([0.1, 0.2, 0.3])
 
-    print("GPS Point:", gps_point)
-    print("Euler Angles:", euler_angle)
     acceleration = np.array([1, 0, 0])
     delta_t = 0.01
-    next_pos = update_pos(gps_point, acceleration, euler_angle, delta_t, 60/3.6)
-    print("Next Position:", next_pos)
+
+    own_velocity = compute_velocity(acceleration, euler_angle, delta_t)
+    print("Computed Velocity:", own_velocity)
+
+    base_velocity = obtain_velocity(acceleration, euler_angle, delta_t)
+    print("Base Velocity:", base_velocity)

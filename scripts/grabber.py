@@ -3,7 +3,7 @@ import socket
 import argparse
 import numpy as np
 # from kf_partial import KalmanFilter
-from utils import display_history, array_to_reponse, display_pos_offset
+from utils import display_history, array_to_reponse, display_pos_offset, compute_velocity
 from kalman_filter import KalmanFilter
 from real_kalman import KakalmanFilter
 from constants import DELTA_T 
@@ -21,9 +21,6 @@ def connect(addr="127.0.0.1", port=4242):
     send_msg(client_socket, msg, addr=complete_addr) # init connexion between imu and client
     return client_socket
 
-# def extract_state(data:dict):
-    # E = np.array([data[""])
-
 def compute_response(data:dict, client_socket, filter):
     if filter is None:
         # filter = KalmanFilter(direction=data['DIRECTION'], acceleration=data["ACCELERATION"], speed=data['SPEED'], true_pos=data["TRUE POSITION"])
@@ -35,11 +32,17 @@ def compute_response(data:dict, client_socket, filter):
     # response = array_to_reponse(data["TRUE POSITION"])
     # x_estimated = filter.predict()
 
+    filter.B = filter.B_default * np.array(data["ACCELERATION"])
     filter.predict()
-    # filter.update(np.concatenate((data["TRUE POSITION"], data["DIRECTION"], np.array(data["ACCELERATION"]))))
-    filter.update(np.concatenate((data["DIRECTION"], np.array(data["ACCELERATION"]))))
 
-    next_pos = filter.update_position(speed=data['SPEED'], delta_t=DELTA_T)
+    if data["POSITION"] is None or data["POSITION"] != [0, 0, 0]:
+        # filter.update(np.concatenate((data["POSITION"], data["DIRECTION"], np.array(data["ACCELERATION"]))))
+        velocity = compute_velocity(data["ACCELERATION"], data["DIRECTION"], DELTA_T)
+        filter.update(np.concatenate((data["POSITION"], velocity)))
+    # filter.update(np.concatenate((data["DIRECTION"], np.array(data["ACCELERATION"]))))
+
+    # next_pos = filter.update_position(speed=data['SPEED'], delta_t=DELTA_T)
+    next_pos = filter.x[:3]
     print("Next pos: ", next_pos)
     print("True pos: ", data["TRUE POSITION"])
     response = array_to_reponse(next_pos)
@@ -48,6 +51,7 @@ def compute_response(data:dict, client_socket, filter):
 
 def get_dict():
     return  {
+        "POSITION":[0, 0, 0],
         "TRUE POSITION":[0, 0, 0],
         "SPEED":[0],
         "ACCELERATION":[0, 0, 0],
@@ -60,6 +64,8 @@ def get_empty_dict():
         "SPEED":[],
         "ACCELERATION":[],
         "DIRECTION":[],
+        "ESTIMATED POSITION":[],
+        "POSITION":[],
     }
 
 def read(client_socket):
@@ -74,7 +80,6 @@ def read(client_socket):
             if not data or data == b'':
                 exit(0)
             data_decode:str = data.decode()
-            # print(f"Received data: {data_decode}")
             if "MSG_END" in data_decode:
                 filter = compute_response(parsed, client_socket, filter)
                 # check if pred pos is in history
@@ -83,6 +88,7 @@ def read(client_socket):
                 history["PRED POSITION"].append(filter.pos)
                 parsed = get_dict()
                 counter += 1
+                print(f"Counter: {counter}")
                 # if counter > 3:
                     # exit(0)
             else:
@@ -92,7 +98,6 @@ def read(client_socket):
                         valeurs = [float(val) for val in lines[1:]]
                         history[key].append(valeurs)
                         parsed[key] = valeurs
-            # print(f"Readable data:", data_decode)
         except (socket.timeout, socket.error):
             print('REQUEST TIMED OUT')
             break
