@@ -21,7 +21,7 @@ class KalmanFilter():
         # Kalman gain
         self.K = np.zeros((6, 6))
         
-         # covariance matrix
+        # covariance matrix
         self.P = np.eye(6) * 0.01
         
         # previous covariance matrix
@@ -76,12 +76,10 @@ class KalmanFilter():
         Update the measurement vector with the current acceleration and direction
         Here it is each 3 seconds when we receive a new GPS position
         """
-        
-        direction_vector = self.euleur_to_vector(direction)
 
         # Update the measurement vector
         self.Z[0:3] = np.array(true_pos)
-        self.Z[3:6] = self.calculate_velocity(self.speed, direction_vector)
+        self.Z[3:6] = self.calculate_velocity(self.speed, direction)
         # print("Z matrice", self.Z)
 
         # Measurement update
@@ -116,14 +114,11 @@ class KalmanFilter():
         # Return the estimated state vector for the program to send the next position
         return self.estim_x[0:3]
     
-    
     def init_state_vector(self, direction, speed, true_pos):
         """ Initialize the state vector with the given true position and velocity"""
         
-        direction_vector = self.euleur_to_vector(direction)
-        
         self.estim_x[0:3] = np.array(true_pos)
-        self.estim_x[3:6] = self.calculate_velocity(speed, direction_vector)
+        self.estim_x[3:6] = self.calculate_velocity(speed, direction)
     
     
     def calculate_velocity(self, speed, direction):
