@@ -5,6 +5,7 @@ import numpy as np
 # from kf_partial import KalmanFilter
 from utils_v2 import display_history, array_to_reponse, display_pos_offset, compute_velocity
 from kalman_filter import KalmanFilter
+# from scripts.real_kalman_v0 import KakalmanFilter
 from real_kalman import KakalmanFilter
 from constants import DELTA_T 
 
@@ -29,29 +30,25 @@ def compute_response(data:dict, client_socket, filter):
                                 direction=data['DIRECTION'])
 
     # response = array_to_reponse(data["TRUE POSITION"])
-    filter.B = filter.B_default * np.array(data["ACCELERATION"])
-    filter.predict()
+    # filter.B = filter.B_default * (np.array(data["ACCELERATION"]) * DELTA_T)
+    # filter.B = filter.B_default * (np.array(data["ACCELERATION"]))
+    filter.predict(np.array(data["ACCELERATION"]))
 
     if data["POSITION"] is None or data["POSITION"] != [0, 0, 0]:
         # filter.update(np.concatenate((data["POSITION"], data["DIRECTION"], np.array(data["ACCELERATION"]))))
         # velocity = compute_velocity(data["ACCELERATION"], data["DIRECTION"], DELTA_T)
-        # filter.H = np.eye(6)  # Reset observation matrix
+        filter.H = np.eye(6)  # Reset observation matrix
         velocity = compute_velocity(euler_angles=data["DIRECTION"], delta_t=DELTA_T, velocity=filter.x[3:6], acceleration=data["ACCELERATION"])
         filter.update(np.concatenate((data["POSITION"], velocity)))
     else:
-        # filter.H = np.zeros((6, 6))  # Reset observation matrix
-        # filter.H[0, 0] = 1
-        # filter.H[1, 1] = 1
-        # filter.H[2, 2] = 1
-        # filter.H[3, 3] = 1
-        # filter.H[4, 4] = 1
-        # filter.H[5, 5] = 1
+        filter.H = np.eye(6)  # Reset observation matrix
+        filter.H[1, 1] = 0
+        filter.H[2, 2] = 0
+        filter.H[3, 3] = 0
+        print("Position is zero, using direction and acceleration for update.")
 
         velocity = compute_velocity(euler_angles=data["DIRECTION"], delta_t=DELTA_T, velocity=filter.x[3:6], acceleration=data["ACCELERATION"])
         filter.update(np.concatenate((filter.x[:3], velocity)))
-    # filter.update(np.concatenate((data["DIRECTION"], np.array(data["ACCELERATION"]))))
-
-    # next_pos = filter.update_position(speed=data['SPEED'], delta_t=DELTA_T)
     next_pos = filter.x[:3]
     print("Next pos: ", next_pos)
     print("True pos: ", data["TRUE POSITION"])
@@ -116,13 +113,12 @@ def read(client_socket):
     return history    
 
 def launch_imu():
-    # launch like that:
     # ./imu-sensor-stream-linux -s 42 -d 10 -p 4242 --debug
     import os
     import subprocess
     os.system("pkill imu-sensor-stream-linux")  # Kill any existing imu sensor stream
-    # command = "./imu-sensor-stream-linux -s 42 -d 10 -p 4242    "
-    command = "./imu-sensor-stream-linux -d 10 -p 4242 --debug"
+    # command = "./imu-sensor-stream-linux -s 42 -d 10 -p 4242 --debug"
+    command = "./imu-sensor-stream-linux -s 42 -d 10 -p 4242"
     gnome_terminal_command = f"gnome-terminal -- bash -c '{command}'"
     process = subprocess.Popen(gnome_terminal_command, shell=True)
     if process.poll() is not None:
