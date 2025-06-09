@@ -65,74 +65,37 @@ def array_to_reponse(data):
     response = response.removesuffix(" ")
     return response
 
-def rotation_matrix_from_euler(roll, pitch, yaw):
-    # yaw is psi, pitch is theta and roll is phi.
 
-    # rotation around Z
-    rot_psi = np.array([
-        # [np.cos(roll), -np.sin(roll), 0],
+def rotation_matrix_from_euler(roll, pitch, yaw):
+    # Rotation around X (roll)
+    R_x = np.array([
         [1, 0, 0],
         [0, np.cos(roll), -np.sin(roll)],
-        [0, np.sin(roll), np.cos(roll)],])
-
-    # rotation around N which is the X axis after rot_psi
-    rot_theta = np.array([
-        [np.cos(pitch), 0 ,np.sin(pitch)],
-        [0, 1, 0],
-        [-np.sin(pitch), 0, np.cos(pitch)]])
+        [0, np.sin(roll), np.cos(roll)]
+    ])
     
-    # rotation around Z'
-    rot_phi = np.array([
+    # Rotation around Y (pitch)
+    R_y = np.array([
+        [np.cos(pitch), 0, np.sin(pitch)],
+        [0, 1, 0],
+        [-np.sin(pitch), 0, np.cos(pitch)]
+    ])
+    
+    # Rotation around Z (yaw)
+    R_z = np.array([
         [np.cos(yaw), -np.sin(yaw), 0],
         [np.sin(yaw), np.cos(yaw), 0],
-        [0, 0, 1],])
+        [0, 0, 1]
+    ])
     
-    # apply the 3 rotation
-    return rot_phi @ rot_theta @ rot_psi
+    # return R_z @ R_y @ R_x
+    return R_x @ R_y @ R_z
 
-
-# def compute_velocity(acceleration, euler_angles, delta_t):
 def compute_velocity(euler_angles, velocity, delta_t, acceleration):
     rotation_matrix = rotation_matrix_from_euler(*euler_angles)
-
-    global_accel = rotation_matrix @ acceleration
-
-    velocity = velocity + global_accel * delta_t    
-    # velocity = global_accel * delta_t    
-    return velocity
     
-
-def obtain_velocity(acceleration, euler_angles, delta_t):
-    roll = euler_angles[0]
-    pitch = euler_angles[1]
-    yaw = euler_angles[2]
-
-    r_x = np.array([[1, 0, 0],
-                    [0, np.cos(roll), -np.sin(roll)],
-                    [0, np.sin(roll), np.cos(roll)]])
-    r_y = np.array([[np.cos(pitch), 0, np.sin(pitch)],
-                    [0, 1, 0],
-                    [-np.sin(pitch), 0, np.cos(pitch)]])
-    r_z = np.array([[np.cos(yaw), -np.sin(yaw), 0],
-                    [np.sin(yaw), np.cos(yaw), 0],
-                    [0, 0, 1]])
-    r = r_z @ r_y @ r_x
-    a_x = r[0, 0] * acceleration[0] + r[0, 1] * acceleration[1] + r[0, 2] * acceleration[2]
-    a_y = r[1, 0] * acceleration[0] + r[1, 1] * acceleration[1] + r[1, 2] * acceleration[2]
-    a_z = r[2, 0] * acceleration[0] + r[2, 1] * acceleration[1] + r[2, 2] * acceleration[2]
-    velocity = np.array([a_x, a_y, a_z])
-    velocity *= delta_t
-    return velocity
-
-if __name__ == '__main__':
-    gps_point = np.array([1, 2, 3])
-    euler_angle = np.array([0.1, 0.2, 0.3])
-
-    acceleration = np.array([1, 0, 0])
-    delta_t = 0.01
-
-    own_velocity = compute_velocity(acceleration, euler_angle, delta_t)
-    print("Computed Velocity:", own_velocity)
-
-    base_velocity = obtain_velocity(acceleration, euler_angle, delta_t)
-    print("Base Velocity:", base_velocity)
+    global_accel = rotation_matrix @ acceleration
+    
+    new_velocity = velocity + global_accel * delta_t
+    
+    return new_velocity
