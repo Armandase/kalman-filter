@@ -19,8 +19,6 @@ def display_history(history):
 
     ax3 = fig.add_subplot(2, 2, 3)
     acceleration = np.array(history['ACCELERATION']).T
-    # avg = mobile_average(acceleration[0])
-    # low_pass = low_pass_filter(acceleration[0])
     # ax3.plot(avg, label="X MA")
     # ax3.plot(low_pass, label="X LP")
     ax3.plot(acceleration[0], label="X")

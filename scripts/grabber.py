@@ -118,7 +118,8 @@ def launch_imu():
     import subprocess
     os.system("pkill imu-sensor-stream-linux")  # Kill any existing imu sensor stream
     # command = "./imu-sensor-stream-linux -s 42 -d 10 -p 4242 --debug"
-    command = "./imu-sensor-stream-linux -s 42 -d 10 -p 4242"
+    # command = "./imu-sensor-stream-linux -s 42 -d 10 -p 4242"
+    command = "./imu-sensor-stream-linux -d 10 -p 4242"
     gnome_terminal_command = f"gnome-terminal -- bash -c '{command}'"
     process = subprocess.Popen(gnome_terminal_command, shell=True)
     if process.poll() is not None:
