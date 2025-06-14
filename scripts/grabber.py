@@ -23,30 +23,19 @@ def connect(addr="127.0.0.1", port=4242):
 
 def compute_response(data:dict, client_socket, filter):
     if filter is None:
-        filter = KakalmanFilter(true_pos=data["TRUE POSITION"], 
-        # filter = KalmanFilter(true_pos=data["TRUE POSITION"], 
+        # filter = KakalmanFilter(true_pos=data["TRUE POSITION"], 
+        filter = KalmanFilter(true_pos=data["TRUE POSITION"], 
                                 acceleration=data["ACCELERATION"], 
                                 speed=data['SPEED'], 
                                 direction=data['DIRECTION'])
 
-    # filter.B = filter.B_default * (np.array(data["ACCELERATION"]) * DELTA_T)
-    # filter.B = filter.B_default * (np.array(data["ACCELERATION"]))
     filter.predict(u=np.array(data["ACCELERATION"]))
 
     if data["POSITION"] is None or data["POSITION"] != [0, 0, 0]:
-        # velocity = compute_velocity(euler_angles=data["DIRECTION"], delta_t=DELTA_T, velocity=filter.x[3:6], acceleration=data["ACCELERATION"])
-        # filter.update(np.concatenate((data["POSITION"], velocity)))
         filter.update(data["POSITION"])
-    else:
-        # filter.H = np.eye(6)  # Reset observation matrix
-        # filter.H[1, 1] = 0
-        # filter.H[2, 2] = 0
-        # filter.H[3, 3] = 0
-        # print("Position is zero, using direction and acceleration for update.")
-        # velocity = compute_velocity(euler_angles=data["DIRECTION"], delta_t=DELTA_T, velocity=filter.x[3:6], acceleration=data["ACCELERATION"])
-        # filter.update(np.concatenate((filter.x[:3], velocity)))
-        pass
+
     next_pos = filter.x[:3]
+
     print("Next pos: ", next_pos)
     print("True pos: ", data["TRUE POSITION"])
     response = array_to_reponse(next_pos)
