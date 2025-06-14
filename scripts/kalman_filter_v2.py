@@ -13,7 +13,11 @@ class KalmanFilter():
         self.F[2, 5] = DELTA_T  # z position depends on z velocity
 
         # Observation matrix - observe position and velocity
-        self.H = np.eye(6)
+        # self.H = np.eye(6)
+        self.H = np.zeros((3, 6))
+        self.H[0, 0] = 1  # Observe x position
+        self.H[1, 1] = 1  # Observe y position
+        self.H[2, 2] = 1  # Observe z position
         
         # Simplified process noise matrix
         # Use constant acceleration model for process noise
