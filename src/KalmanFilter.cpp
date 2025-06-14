@@ -22,8 +22,9 @@ KalmanFilter::KalmanFilter(int dimZ, int dimX) {
 }
 
 void KalmanFilter::initMatrices(const VectorXd &pos, const VectorXd &accel, const VectorXd &dir, float speed) {
+    std::cout << "Initializing KalmanFilter matrices..." << std::endl;
     VectorXd defaultVelocity(3); // Default velocity vector initialized to zero
-    defaultVelocity(0) = speed; // Set the x component to speed
+    defaultVelocity(0) = speed / 3.6; // Set the x component to speed
     // Compute the velocity based on speed and direction
     VectorXd velocity(3);
     velocity = computeVelocity(accel, dir, defaultVelocity, DT);
@@ -38,7 +39,7 @@ void KalmanFilter::initMatrices(const VectorXd &pos, const VectorXd &accel, cons
     this->F(2, 5) = DT; // z position update
 
     this->Q = MatrixXd::Zero(dimX, dimX); // Process noise covariance
-    double q_pos = 0.5 * DT * DT; // Position uncertainty from acceleration
+    double q_pos = 0.5 * (DT * DT); // Position uncertainty from acceleration
     this->Q << 
         q_pos * q_pos * VARIANCE_ACCEL, 0, 0, q_pos * DT * VARIANCE_ACCEL, 0, 0,
         0, q_pos * q_pos * VARIANCE_ACCEL, 0, 0, q_pos * DT * VARIANCE_ACCEL, 0,
@@ -61,6 +62,14 @@ void KalmanFilter::initMatrices(const VectorXd &pos, const VectorXd &accel, cons
         0, DT, 0,
         0, 0, DT; // Control input matrix
     this->initialized = true; // Set initialized flag to true
+
+
+    // std::cout << "F:\n" << this->F << std::endl;
+    // std::cout << "P:\n" << this->P << std::endl;
+    // std::cout << "H:\n" << this->H << std::endl;
+    // std::cout << "R:\n" << this->R << std::endl;
+    // std::cout << "Q:\n" << this->Q << std::endl;
+    // std::cout << "B:\n" << this->B << std::endl;
 }
 
 void KalmanFilter::predict() {

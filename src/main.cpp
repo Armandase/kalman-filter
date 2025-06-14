@@ -11,16 +11,18 @@
 
 std::string computeResponse(KalmanFilter &kf, DataStorage &data)
 {
-    if (kf.isInitialized())
+    if (!kf.isInitialized())
     {
         VectorXd truePos = data.getTruePosition();
         VectorXd accel = data.getAcceleration();
         VectorXd dir = data.getDirection();
         float speed = data.getSpeedValue();
         kf.initMatrices(truePos, accel, dir, speed);
+        // exit(0);
     }
     kf.predict();
 
+    
     if (data.isPositionEmpty() == false){
         VectorXd pos = data.getPosition();
         if (pos.size() == 3) {
