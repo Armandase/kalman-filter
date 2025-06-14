@@ -1,4 +1,3 @@
-#include <iostream>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <unistd.h>
@@ -6,6 +5,10 @@
 #include <fcntl.h>
 #include <cstring>
 #include <cerrno>
+#include <iostream>
+
+#define BUFFER_SIZE 1024
+#define TIMEOUT_SEC 5
 
 class UdpClient
 {

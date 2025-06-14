@@ -1,6 +1,5 @@
 #include "../inc/UdpClient.h"
 
-#define BUFFER_SIZE 1024
 
 UdpClient::UdpClient()
 {
@@ -49,7 +48,7 @@ int UdpClient::sendMessage(std::string msg)
         0, (const struct sockaddr *)&m_servaddr,
         sizeof(m_servaddr))  == -1 )
     {
-        std::cerr << "SendMessage " << std::strerror(errno) << std::endl;
+        std::cerr << "Send Message " << std::strerror(errno) << std::endl;
         return 1;
     }
     std::cout << "Message sent" << std::endl;
@@ -58,17 +57,17 @@ int UdpClient::sendMessage(std::string msg)
 
 int UdpClient::readMessage()
 {
-    socklen_t len;
+    socklen_t len = sizeof(m_servaddr);
 
     char tmp_buffer[BUFFER_SIZE];
     memset(&tmp_buffer, 0, sizeof(tmp_buffer));
 
     int totalBytesRead = recvfrom(m_sockfd, (char *)tmp_buffer, BUFFER_SIZE,
-        0, (struct sockaddr *)&m_servaddr,
-    (socklen_t *)&len);
+        0, (struct sockaddr *)&m_servaddr, &len);
+    // (socklen_t *)&len);
     if (totalBytesRead < 0 )
     {
-        std::cerr << "SendMessage " << std::strerror(errno) << std::endl;
+        std::cerr << "ReadMessage " << std::strerror(errno) << std::endl;
         return 1;
     }
     tmp_buffer[totalBytesRead] = '\0';
