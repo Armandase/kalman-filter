@@ -1,7 +1,7 @@
 from filterpy.kalman import KalmanFilter as FP_KalmanFilter
 import numpy as np
 from constants import DELTA_T, ACCEL_NOISE, GYRO_NOISE, GPS_NOISE, VARIANCE_ACCEL, VARIANCE_GYRO, VARIANCE_GPS
-from utils_v2 import compute_velocity
+from utils import compute_velocity
 
 class KakalmanFilter(FP_KalmanFilter):
     def __init__(self, true_pos, acceleration, speed, direction):
@@ -14,7 +14,6 @@ class KakalmanFilter(FP_KalmanFilter):
         self.F[2, 5] = DELTA_T  # z position depends on z velocity
 
         # Observation matrix - observe position and velocity
-        # self.H = np.eye(6)
         self.H = np.zeros((3, 6))
         self.H[0, 0] = 1
         self.H[1, 1] = 1  # Observe y position

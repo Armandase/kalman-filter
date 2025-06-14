@@ -1,95 +1,80 @@
 import numpy as np
-from constants import DELTA_T, ACCEL_NOISE, GYRO_NOISE, GPS_NOISE, VARIANCE_ACCEL, VARIANCE_GYRO
+
+from constants import DELTA_T, VARIANCE_ACCEL, VARIANCE_GYRO, VARIANCE_GPS, ACCEL_NOISE, GYRO_NOISE, GPS_NOISE
+from utils import compute_velocity
 
 class KalmanFilter():
-    def __init__(self, direction, acceleration, speed, true_pos):
-        # print(f"Direction : {direction},\nacceleration : {acceleration},\nspeed : {speed},\ntrue_pos: {true_pos}")
-        self.A = np.eye(9) # state transition matrix
-        self.A[0, 3] = DELTA_T  # px depends on vx
-        self.A[1, 4] = DELTA_T  # py depends on vy
-        self.A[2, 5] = DELTA_T  # pz depends on vz
+    def __init__(self, true_pos, acceleration, speed, direction):
+        # State transition matrix (constant velocity model)
+        self.F = np.eye(6)
+        self.F[0, 3] = DELTA_T  # x position depends on x velocity
+        self.F[1, 4] = DELTA_T  # y position depends on y velocity
+        self.F[2, 5] = DELTA_T  # z position depends on z velocity
+
+        # Observation matrix - observe position and velocity
+        # self.H = np.eye(6)
+        self.H = np.zeros((3, 6))
+        self.H[0, 0] = 1
+        self.H[1, 1] = 1  # Observe y position
+        self.H[2, 2] = 1
         
-        self.A[3, 6] = DELTA_T  # vx depends on ax
-        self.A[4, 7] = DELTA_T  # vy depends on ay
-        self.A[5, 8] = DELTA_T  # vz depends on az
-
-        self.H = np.zeros((6, 9)) # used to map the measurement space to the state space
-        for i in range(6):
-            self.H[i, i + 3] = 1
-        self.Q = np.diag([       # Process noise covariance Q (9x9)
-            GPS_NOISE, GPS_NOISE, GPS_NOISE,       # position x, y, z
-            GYRO_NOISE, GYRO_NOISE, GYRO_NOISE,    # velocity x, y, z
-            ACCEL_NOISE, ACCEL_NOISE, ACCEL_NOISE  # acceleration x, y, z
+        # Simplified process noise matrix
+        # Use constant acceleration model for process noise
+        q_pos = 0.5 * DELTA_T**2  # Position uncertainty from acceleration
+        q_vel = DELTA_T             # Velocity uncertainty
+        
+        self.Q = np.array([
+            [q_pos**2 * VARIANCE_ACCEL, 0, 0, q_pos * q_vel * VARIANCE_ACCEL, 0, 0],
+            [0, q_pos**2 * VARIANCE_ACCEL, 0, 0, q_pos * q_vel * VARIANCE_ACCEL, 0],
+            [0, 0, q_pos**2 * VARIANCE_ACCEL, 0, 0, q_pos * q_vel * VARIANCE_ACCEL],
+            [q_pos * q_vel * VARIANCE_ACCEL, 0, 0, q_vel**2 * VARIANCE_ACCEL, 0, 0],
+            [0, q_pos * q_vel * VARIANCE_ACCEL, 0, 0, q_vel**2 * VARIANCE_ACCEL, 0],
+            [0, 0, q_pos * q_vel * VARIANCE_ACCEL, 0, 0, q_vel**2 * VARIANCE_ACCEL]
         ])
-        # self.R = np.diag([
-        #     VARIANCE_ACCEL, VARIANCE_ACCEL, VARIANCE_ACCEL,   # accelerometer noise (σ=0.001²)
-        #     VARIANCE_GYRO, VARIANCE_GYRO, VARIANCE_GYRO    # gyroscope/direction noise (σ=0.01²)
-        # ])
-        self.R = np.diag([
-            ACCEL_NOISE, ACCEL_NOISE, ACCEL_NOISE,   # accelerometer noise (σ=0.001²)
-            GYRO_NOISE, GYRO_NOISE, GYRO_NOISE    # gyroscope/direction noise (σ=0.01²)
-        ])
+        
+        # Measurement noise covariance
+        variance_v = VARIANCE_GYRO + VARIANCE_ACCEL * DELTA_T**2
+        self.R = np.diag([VARIANCE_GPS, VARIANCE_GPS, VARIANCE_GPS]) 
+                        #  variance_v, variance_v, variance_v])
+        
+        # Initial covariance - start with higher uncertainty
+        self.P = np.diag([VARIANCE_GPS, VARIANCE_GPS, VARIANCE_GPS,
+                         variance_v, variance_v, variance_v]) * 10
+        
+        # Control matrix for acceleration input
+        self.B = np.array([[0.5 * DELTA_T**2, 0, 0],
+                          [0, 0.5 * DELTA_T**2, 0],
+                          [0, 0, 0.5 * DELTA_T**2],
+                          [DELTA_T, 0, 0],
+                          [0, DELTA_T, 0],
+                          [0, 0, DELTA_T]])
+        
+        # Initialize speed and velocity
+        self.speed = float(speed[0]) / 3.6  # Convert km/h to m/s
+        
+        # Compute initial velocity from direction and speed
+        velocity = compute_velocity(euler_angles=direction, delta_t=DELTA_T, 
+                                  velocity=np.array([self.speed, 0, 0]), 
+                                  acceleration=acceleration)
+        
+        # Initial state: [x, y, z, vx, vy, vz]
+        self.x = np.concatenate((np.array(true_pos), velocity))
+        self.pos = np.array(true_pos)
+        self.estim_x = self.x.copy()
+        self.pred_P = self.P.copy()
 
-        self.P = np.eye(9) # error covariance matrix
-        self.pred_P = np.eye(3) # prediction of the error covariance matrix
+    def predict(self, u=None):
+        if u is None:
+            u = np.zeros((3,))
 
-        velocity = self.calculate_velocity(speed, direction)
-        self.estim_x = np.concatenate((true_pos, velocity, acceleration)) # [px, py, pz, vx, vy, vz, accelx, accely, accelz]
-        self.pred_x = np.concatenate((true_pos, velocity, acceleration)) # [px, py, pz, vx, vy, vz, accelx, accely, accelz]
-        self.pos = np.array(true_pos) # position
-        self.velocity = velocity # velocity
-        self.speed = float(speed[0]) # speed
-
-    def predict(self):
-        self.pred_x = self.A @ self.estim_x
-        self.pred_P = self.A @ self.P @ self.A.T + self.Q
-        return self.pred_x
+        self.x = self.F @ self.x + self.B @ u
+        self.P = self.F @ self.P @ self.F.T + self.Q
+        return self.x
 
     def update(self, z):
-        """
-        Update the state with the measurement z.
-        z is the measurement vector.
-        """
-        K = self.pred_P @ self.H.T @ np.linalg.inv(self.H @ self.pred_P @ self.H.T + self.R)
+        K = (self.P @ self.H.T) @ np.linalg.inv(self.H @ (self.P @ self.H.T) + self.R)
 
-        self.estim_x = self.pred_x + K @ (z - self.H @ self.pred_x)
-        # self.P = self.pred_P - K @ self.H @ self.pred_P
+        self.x = self.x + K @ (z - self.H @ self.x)
         I = np.eye(self.P.shape[0])
-        self.P = (I - K @ self.H) @ self.pred_P
-
-    def update_position(self, velocity, acceleration, delta_t=DELTA_T):
-        # self.velocity = [speed * d for d in direction]
-        self.velocity = np.array(velocity)
-        acceleration = np.array(acceleration)
-        self.pos = self.pos + self.velocity * delta_t + 0.5 * acceleration * (np.array(delta_t)**2)
-        return self.pos
-
-
-    def calculate_velocity(self, speed, direction):
-        """
-        Calculate the velocity vector given speed and direction.
-
-        Parameters:
-        - speed: A scalar value representing the speed.
-        - direction: A NumPy array representing the direction.
-
-        Returns:
-        - velocity: A vector representing the velocity.
-        """
-
-        if not isinstance(speed, list) or len(speed) != 1:
-            raise ValueError("Speed should be a list with one element.")
-
-        if speed[0] != 0:
-            self.speed = float(speed[0])
-        velocity = self.speed * np.array(direction)
-        return velocity
-    
-    # possible conversion en quaternion
-    # nb:
-    # A = Identité(4*4) + delta_t * Beta 
-    # 4 car les angles sont convertis en quaternion (4 valeurs qui sont (x, y, z, w))
-    # Beta étant matrice de roation obtenu a partir de la conversion d'euler
-    # 
-    # Q = bruit dans le système
-    # P = identité mais l'algo va mettre a jour la matrice de covariance 
+        # self.P = (I - K @ self.H) @ self.P @ (I - K @ self.H) + K @ self.R @ K.T
+        self.P = (I - K @ self.H) @ self.P
