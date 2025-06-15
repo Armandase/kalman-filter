@@ -24,8 +24,7 @@ KalmanFilter::KalmanFilter(int dimZ, int dimX) {
 void KalmanFilter::initMatrices(const VectorXd &pos, const VectorXd &accel, const VectorXd &dir, double speed) {
     std::cout << "Initializing KalmanFilter matrices..." << std::endl;
     VectorXd defaultVelocity(3); // Default velocity vector initialized to zero
-    // defaultVelocity(0) = speed / 3.6; // Set the x component to speed
-    defaultVelocity(0) = speed; // Set the x component to speed
+    defaultVelocity(0) = speed / 3.6; // Set the x component to speed
     // Compute the velocity based on speed and direction
     VectorXd velocity(3);
     velocity = computeVelocity(accel, dir, defaultVelocity, DT);
@@ -66,13 +65,13 @@ void KalmanFilter::initMatrices(const VectorXd &pos, const VectorXd &accel, cons
     this->initialized = true; // Set initialized flag to true
 
 
-    std::cout << "F:\n" << this->F << std::endl;
-    std::cout << "P:\n" << this->P << std::endl;
-    std::cout << "H:\n" << this->H << std::endl;
-    std::cout << "R:\n" << this->R << std::endl;
-    std::cout << "Q:\n" << this->Q << std::endl;
-    std::cout << "B:\n" << this->B << std::endl;
-    std::cout << "x:\n" << this->x << std::endl;
+    // std::cout << "F:\n" << this->F << std::endl;
+    // std::cout << "P:\n" << this->P << std::endl;
+    // std::cout << "H:\n" << this->H << std::endl;
+    // std::cout << "R:\n" << this->R << std::endl;
+    // std::cout << "Q:\n" << this->Q << std::endl;
+    // std::cout << "B:\n" << this->B << std::endl;
+    // std::cout << "x:\n" << this->x << std::endl;
 }
 
 void KalmanFilter::predict() {
@@ -92,6 +91,10 @@ void KalmanFilter::predict(const VectorXd &u) {
         return;
     }
     // Predict the next state with control input
+    // std::cout << "Current F: " << this->F << std::endl;
+    // std::cout << "Current state: " << this->x << std::endl;
+    // std::cout << "Current B: " << this->B << std::endl;
+    // std::cout << "Control input: " << u << std::endl;
     this->x = this->F * this->x + this->B * u; // State prediction with control input
     this->P = this->F * this->P * this->F.transpose() + this->Q; // Covariance prediction
     // std::cout << "Predicted state: " << this->x << std::endl;

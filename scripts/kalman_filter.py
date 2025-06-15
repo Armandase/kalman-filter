@@ -75,17 +75,19 @@ class KalmanFilter():
         print("B:\n", self.B)
 
         print("Initial state x:\n", self.x)
-        # exit()
 
     def predict(self, u=None):
         if u is None:
             u = np.zeros((3,))
 
+        print("F:\n", self.F)
+        print("Current state x:\n", self.x)
+        print("B:\n", self.B)
+        print("u:\n", u)
+
         self.x = self.F @ self.x + self.B @ u
         self.P = self.F @ self.P @ self.F.T + self.Q
 
-        print("Predicted state x:\n", self.x)
-        print("Predicted covariance P:\n", self.P)
         exit()
         return self.x
 

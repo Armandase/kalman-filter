@@ -20,8 +20,9 @@ std::string computeResponse(KalmanFilter &kf, DataStorage &data)
         kf.initMatrices(truePos, accel, dir, speed);
     }
 
-    VectorXd u = computeVelocity(data.getAcceleration(), data.getDirection(), kf.getVelocity(), DT);
-    kf.predict(u);
+    // VectorXd u = computeVelocity(data.getAcceleration(), data.getDirection(), kf.getVelocity(), DT);
+    // kf.predict(u);
+    kf.predict(data.getAcceleration());
 
     
     if (data.isPositionEmpty() == false){

@@ -17,8 +17,7 @@ MatrixXd rotationMatrixFromEuler(double roll, double pitch, double yaw){
           sin(yaw), cos(yaw), 0,
           0, 0, 1;
     
-    MatrixXd R = Rz * Ry * Rx; // Combine rotations
-
+    MatrixXd R = Rx * Ry * Rz; // Combine rotations
     return R;
 }
 
@@ -32,13 +31,6 @@ VectorXd computeVelocity(const VectorXd &accel, const VectorXd &angles, const Ve
 }
 
 
-// def array_to_reponse(data):
-//     response = ""
-//     for val in data:
-//         response += "{:.6f}".format(val)
-//         response += " "
-//     response = response.removesuffix(" ")
-//     return response
 std::string vectorToResponse(const VectorXd &vec) {
     std::string response;
     for (int i = 0; i < vec.size(); ++i) {
