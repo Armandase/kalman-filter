@@ -60,8 +60,22 @@ class KalmanFilter():
         # Initial state: [x, y, z, vx, vy, vz]
         self.x = np.concatenate((np.array(true_pos), velocity))
         self.pos = np.array(true_pos)
-        self.estim_x = self.x.copy()
-        self.pred_P = self.P.copy()
+
+        # print every matrix
+        print("F:\n", self.F)
+        # P
+        print("P:\n", self.P)
+        # H
+        print("H:\n", self.H)
+        # R
+        print("R:\n", self.R)
+        # Q
+        print("Q:\n", self.Q)
+        # B
+        print("B:\n", self.B)
+
+        print("Initial state x:\n", self.x)
+        # exit()
 
     def predict(self, u=None):
         if u is None:
@@ -69,6 +83,10 @@ class KalmanFilter():
 
         self.x = self.F @ self.x + self.B @ u
         self.P = self.F @ self.P @ self.F.T + self.Q
+
+        print("Predicted state x:\n", self.x)
+        print("Predicted covariance P:\n", self.P)
+        exit()
         return self.x
 
     def update(self, z):

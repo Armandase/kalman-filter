@@ -74,6 +74,13 @@ void DataStorage::readBuffer(std::string &buffer)
     }
 }
 
+void DataStorage::printData() const
+{
+    for (const auto &pair : m_dataMap)
+    {
+        std::cout << pair.first << ": " << pair.second.transpose() << std::endl;
+    }
+}
 
 VectorXd DataStorage::getTruePosition() {
     return this->m_dataMap["TRUE POSITION"];

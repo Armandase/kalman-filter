@@ -16,16 +16,18 @@ std::string computeResponse(KalmanFilter &kf, DataStorage &data)
         VectorXd truePos = data.getTruePosition();
         VectorXd accel = data.getAcceleration();
         VectorXd dir = data.getDirection();
-        float speed = data.getSpeedValue();
+        double speed = data.getSpeedValue();
         kf.initMatrices(truePos, accel, dir, speed);
-        // exit(0);
     }
-    kf.predict();
+
+    VectorXd u = computeVelocity(data.getAcceleration(), data.getDirection(), kf.getVelocity(), DT);
+    kf.predict(u);
 
     
     if (data.isPositionEmpty() == false){
         VectorXd pos = data.getPosition();
         if (pos.size() == 3) {
+            std::cout << "Updating Kalman filter with position: " << pos.transpose() << std::endl;
             kf.update(pos);
         } else {
             std::cerr << "Position vector size is not 3, skipping update." << std::endl;

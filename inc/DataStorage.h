@@ -16,6 +16,7 @@ class DataStorage
         ~DataStorage();
 
         void readBuffer(std::string &buffer);
+        void printData() const;
         void clearData();
 
         VectorXd getTruePosition();

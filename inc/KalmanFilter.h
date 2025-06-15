@@ -11,13 +11,14 @@ class KalmanFilter
     public:
         KalmanFilter(int dimZ, int dimX);
 
-        void initMatrices(const VectorXd &pos, const VectorXd &accel, const VectorXd &dir, float speed);
+        void initMatrices(const VectorXd &pos, const VectorXd &accel, const VectorXd &dir, double speed);
 
         void predict();
         void predict(const VectorXd &u);
         void update(const VectorXd &z);
 
         VectorXd getPos() const;
+        VectorXd getVelocity() const;
         bool isInitialized() const;
     private:
         int dimZ; // Dimension of measurement vector

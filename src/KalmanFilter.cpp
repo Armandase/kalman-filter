@@ -21,10 +21,11 @@ KalmanFilter::KalmanFilter(int dimZ, int dimX) {
     this->initialized = false; // Flag to check if matrices are initialized
 }
 
-void KalmanFilter::initMatrices(const VectorXd &pos, const VectorXd &accel, const VectorXd &dir, float speed) {
+void KalmanFilter::initMatrices(const VectorXd &pos, const VectorXd &accel, const VectorXd &dir, double speed) {
     std::cout << "Initializing KalmanFilter matrices..." << std::endl;
     VectorXd defaultVelocity(3); // Default velocity vector initialized to zero
-    defaultVelocity(0) = speed / 3.6; // Set the x component to speed
+    // defaultVelocity(0) = speed / 3.6; // Set the x component to speed
+    defaultVelocity(0) = speed; // Set the x component to speed
     // Compute the velocity based on speed and direction
     VectorXd velocity(3);
     velocity = computeVelocity(accel, dir, defaultVelocity, DT);
@@ -51,9 +52,10 @@ void KalmanFilter::initMatrices(const VectorXd &pos, const VectorXd &accel, cons
     // DiagonalMatrix<double, 3> m(3, 8, 6);
     this->R = DiagonalMatrix<double, 3>(VARIANCE_GPS, VARIANCE_GPS, VARIANCE_GPS); // Measurement noise covariance
 
-    float varianceVelocity = VARIANCE_GYRO + VARIANCE_ACCEL * (DT * DT);
+    double varianceVelocity = VARIANCE_GYRO + VARIANCE_ACCEL * (DT * DT);
     this->P = DiagonalMatrix<double, 6>(VARIANCE_GPS, VARIANCE_GPS, VARIANCE_GPS, varianceVelocity, varianceVelocity, varianceVelocity); // State covariance matrix
-    float step = 0.5 * (DT * DT);
+    this->P = this->P * 10;
+    double step = 0.5 * (DT * DT);
     this->B << 
         step, 0, 0,
         0, step, 0,
@@ -64,12 +66,13 @@ void KalmanFilter::initMatrices(const VectorXd &pos, const VectorXd &accel, cons
     this->initialized = true; // Set initialized flag to true
 
 
-    // std::cout << "F:\n" << this->F << std::endl;
-    // std::cout << "P:\n" << this->P << std::endl;
-    // std::cout << "H:\n" << this->H << std::endl;
-    // std::cout << "R:\n" << this->R << std::endl;
-    // std::cout << "Q:\n" << this->Q << std::endl;
-    // std::cout << "B:\n" << this->B << std::endl;
+    std::cout << "F:\n" << this->F << std::endl;
+    std::cout << "P:\n" << this->P << std::endl;
+    std::cout << "H:\n" << this->H << std::endl;
+    std::cout << "R:\n" << this->R << std::endl;
+    std::cout << "Q:\n" << this->Q << std::endl;
+    std::cout << "B:\n" << this->B << std::endl;
+    std::cout << "x:\n" << this->x << std::endl;
 }
 
 void KalmanFilter::predict() {
@@ -91,6 +94,9 @@ void KalmanFilter::predict(const VectorXd &u) {
     // Predict the next state with control input
     this->x = this->F * this->x + this->B * u; // State prediction with control input
     this->P = this->F * this->P * this->F.transpose() + this->Q; // Covariance prediction
+    // std::cout << "Predicted state: " << this->x << std::endl;
+    // std::cout << "Predicted covariance: \n" << this->P << std::endl;
+    // exit(0); // Exit after prediction for debugging purposes
 }
 
 void KalmanFilter::update(const VectorXd &z) {
@@ -111,6 +117,11 @@ void KalmanFilter::update(const VectorXd &z) {
 VectorXd KalmanFilter::getPos() const {
     // Return the position part of the state vector
     return this->x.head(3); // Assuming the first three elements are the position
+}
+
+VectorXd KalmanFilter::getVelocity() const {
+    // Return the velocity part of the state vector
+    return this->x.segment(3, 3); // Assuming the next three elements are the velocity
 }
 
 bool KalmanFilter::isInitialized() const {
