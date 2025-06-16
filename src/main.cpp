@@ -59,7 +59,7 @@ int main()
         {
             running = false;
         }
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        // std::this_thread::sleep_for(std::chrono::milliseconds(10));
         std::string buffer = client.getBuffer();
         if (buffer.empty())
             continue;
