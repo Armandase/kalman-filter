@@ -52,7 +52,7 @@ def display_pos_offset(history):
     ax1.set_zlabel("Z")
     ax1.legend(["True Position", "Predicted Position"])
     plt.tight_layout()
-    plt.show()    
+    plt.show()
 
 def array_to_reponse(data):
     response = ""

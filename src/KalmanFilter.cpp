@@ -48,7 +48,7 @@ void KalmanFilter::initMatrices(const VectorXd &pos, const VectorXd &accel, cons
         0, q_pos * DT * VARIANCE_ACCEL, 0, 0, DT * DT * VARIANCE_ACCEL, 0,
         0, 0, q_pos * DT * VARIANCE_ACCEL, 0, 0, DT * DT * VARIANCE_ACCEL;
 
-    // DiagonalMatrix<double, 3> m(3, 8, 6);
+    // DiagonalMatrix<double, 3> ;
     this->R = DiagonalMatrix<double, 3>(VARIANCE_GPS, VARIANCE_GPS, VARIANCE_GPS); // Measurement noise covariance
 
     double varianceVelocity = VARIANCE_GYRO + VARIANCE_ACCEL * (DT * DT);
@@ -63,15 +63,6 @@ void KalmanFilter::initMatrices(const VectorXd &pos, const VectorXd &accel, cons
         0, DT, 0,
         0, 0, DT; // Control input matrix
     this->initialized = true; // Set initialized flag to true
-
-
-    // std::cout << "F:\n" << this->F << std::endl;
-    // std::cout << "P:\n" << this->P << std::endl;
-    // std::cout << "H:\n" << this->H << std::endl;
-    // std::cout << "R:\n" << this->R << std::endl;
-    // std::cout << "Q:\n" << this->Q << std::endl;
-    // std::cout << "B:\n" << this->B << std::endl;
-    // std::cout << "x:\n" << this->x << std::endl;
 }
 
 void KalmanFilter::predict() {
@@ -91,15 +82,8 @@ void KalmanFilter::predict(const VectorXd &u) {
         return;
     }
     // Predict the next state with control input
-    // std::cout << "Current F: " << this->F << std::endl;
-    // std::cout << "Current state: " << this->x << std::endl;
-    // std::cout << "Current B: " << this->B << std::endl;
-    // std::cout << "Control input: " << u << std::endl;
     this->x = this->F * this->x + this->B * u; // State prediction with control input
     this->P = this->F * this->P * this->F.transpose() + this->Q; // Covariance prediction
-    // std::cout << "Predicted state: " << this->x << std::endl;
-    // std::cout << "Predicted covariance: \n" << this->P << std::endl;
-    // exit(0); // Exit after prediction for debugging purposes
 }
 
 void KalmanFilter::update(const VectorXd &z) {

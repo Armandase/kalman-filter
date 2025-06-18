@@ -20,8 +20,6 @@ std::string computeResponse(KalmanFilter &kf, DataStorage &data)
         kf.initMatrices(truePos, accel, dir, speed);
     }
 
-    // VectorXd u = computeVelocity(data.getAcceleration(), data.getDirection(), kf.getVelocity(), DT);
-    // kf.predict(u);
     kf.predict(data.getAcceleration());
 
     
@@ -44,7 +42,6 @@ int main()
 {
     std::string firstMsg = "READY";
     UdpClient client;
-    // KalmanFilter kf(6, 3);
     KalmanFilter kf(3, 6);
     DataStorage data;
 
@@ -59,7 +56,6 @@ int main()
         {
             running = false;
         }
-        // std::this_thread::sleep_for(std::chrono::milliseconds(10));
         std::string buffer = client.getBuffer();
         if (buffer.empty())
             continue;

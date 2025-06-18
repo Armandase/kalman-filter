@@ -8,6 +8,8 @@ DataStorage::DataStorage()
     this->m_dataMap["ACCELERATION"] = VectorXd::Zero(3);
     this->m_dataMap["DIRECTION"] = VectorXd::Zero(3);
     this->m_dataMap["POSITION"] = VectorXd::Zero(3);
+
+    this->m_history = std::vector<t_point>();
 }
 
 DataStorage::~DataStorage()
@@ -128,4 +130,12 @@ bool DataStorage::isPositionEmpty() const {
 
 bool DataStorage::isEmpty() const {
     return isTruePosEmpty() && isSpeedEmpty() && isAccelEmpty() && isDirectionEmpty() && isPositionEmpty();
+}
+
+std::vector<t_point> DataStorage::getHistory() const{
+    return this->m_history;
+}
+
+void DataStorage::appendToHistory(double x, double y, double z){
+    this->m_history.push_back({x, y ,z});
 }
