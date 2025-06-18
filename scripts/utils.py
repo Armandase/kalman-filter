@@ -1,7 +1,5 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from kalman_filter import KalmanFilter
-
 
 def display_history(history):
     fig = plt.figure(figsize=(10, 8))
@@ -9,6 +7,8 @@ def display_history(history):
     ax1 = fig.add_subplot(2, 2, 1, projection='3d')
     true_pos = np.array(history["TRUE POSITION"]).T
     ax1.plot3D(true_pos[0], true_pos[1], true_pos[2], c='red')
+    pred_pos = np.array(history["PRED POSITION"]).T
+    ax1.plot3D(pred_pos[0], pred_pos[1], pred_pos[2], c='blue')
     ax1.set_title("True Position")
 
     ax2 = fig.add_subplot(2, 2, 2)
@@ -39,11 +39,60 @@ def display_history(history):
     plt.tight_layout()
     plt.show()
 
+def display_pos_offset(history):
+    fig = plt.figure(figsize=(10, 8))
+    ax1 = fig.add_subplot(2, 2, 1, projection='3d')
+    true_pos = np.array(history["TRUE POSITION"]).T
+    pred_pos = np.array(history["PRED POSITION"]).T
+    ax1.plot3D(true_pos[0], true_pos[1], true_pos[2], c='green')
+    ax1.plot3D(pred_pos[0], pred_pos[1], pred_pos[2], c='red')
+    ax1.set_title("True Position vs Predicted Position")
+    ax1.set_xlabel("X")
+    ax1.set_ylabel("Y")
+    ax1.set_zlabel("Z")
+    ax1.legend(["True Position", "Predicted Position"])
+    plt.tight_layout()
+    plt.show()
+
 def array_to_reponse(data):
     response = ""
     for val in data:
         response += "{:.6f}".format(val)
         response += " "
     response = response.removesuffix(" ")
-    print(response)
     return response
+
+
+def rotation_matrix_from_euler(roll, pitch, yaw):
+    # Rotation around X (roll)
+    R_x = np.array([
+        [1, 0, 0],
+        [0, np.cos(roll), -np.sin(roll)],
+        [0, np.sin(roll), np.cos(roll)]
+    ])
+    
+    # Rotation around Y (pitch)
+    R_y = np.array([
+        [np.cos(pitch), 0, np.sin(pitch)],
+        [0, 1, 0],
+        [-np.sin(pitch), 0, np.cos(pitch)]
+    ])
+    
+    # Rotation around Z (yaw)
+    R_z = np.array([
+        [np.cos(yaw), -np.sin(yaw), 0],
+        [np.sin(yaw), np.cos(yaw), 0],
+        [0, 0, 1]
+    ])
+    
+    # return R_z @ R_y @ R_x
+    return R_x @ R_y @ R_z
+
+def compute_velocity(euler_angles, velocity, delta_t, acceleration):
+    rotation_matrix = rotation_matrix_from_euler(*euler_angles)
+    
+    global_accel = rotation_matrix @ acceleration
+    
+    new_velocity = velocity + global_accel * delta_t
+    
+    return new_velocity

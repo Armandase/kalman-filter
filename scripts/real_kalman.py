@@ -1,10 +1,12 @@
+from filterpy.kalman import KalmanFilter as FP_KalmanFilter
 import numpy as np
-
-from constants import DELTA_T, VARIANCE_ACCEL, VARIANCE_GYRO, VARIANCE_GPS, ACCEL_NOISE, GYRO_NOISE, GPS_NOISE
+from constants import DELTA_T, ACCEL_NOISE, GYRO_NOISE, GPS_NOISE, VARIANCE_ACCEL, VARIANCE_GYRO, VARIANCE_GPS
 from utils import compute_velocity
 
-class KalmanFilter():
+class KakalmanFilter(FP_KalmanFilter):
     def __init__(self, true_pos, acceleration, speed, direction):
+        super().__init__(dim_x=6, dim_z=3)
+        
         # State transition matrix (constant velocity model)
         self.F = np.eye(6)
         self.F[0, 3] = DELTA_T  # x position depends on x velocity
@@ -12,7 +14,6 @@ class KalmanFilter():
         self.F[2, 5] = DELTA_T  # z position depends on z velocity
 
         # Observation matrix - observe position and velocity
-        # self.H = np.eye(6)
         self.H = np.zeros((3, 6))
         self.H[0, 0] = 1
         self.H[1, 1] = 1  # Observe y position
@@ -60,40 +61,3 @@ class KalmanFilter():
         # Initial state: [x, y, z, vx, vy, vz]
         self.x = np.concatenate((np.array(true_pos), velocity))
         self.pos = np.array(true_pos)
-
-        # # print every matrix
-        # print("F:\n", self.F)
-        # # P
-        # print("P:\n", self.P)
-        # # H
-        # print("H:\n", self.H)
-        # # R
-        # print("R:\n", self.R)
-        # # Q
-        # print("Q:\n", self.Q)
-        # # B
-        # print("B:\n", self.B)
-
-        # print("Initial state x:\n", self.x)
-
-    def predict(self, u=None):
-        if u is None:
-            u = np.zeros((3,))
-
-        # print("F:\n", self.F)
-        # print("Current state x:\n", self.x)
-        # print("B:\n", self.B)
-        # print("u:\n", u)
-
-        self.x = self.F @ self.x + self.B @ u
-        self.P = self.F @ self.P @ self.F.T + self.Q
-
-        return self.x
-
-    def update(self, z):
-        K = (self.P @ self.H.T) @ np.linalg.inv(self.H @ (self.P @ self.H.T) + self.R)
-
-        self.x = self.x + K @ (z - self.H @ self.x)
-        I = np.eye(self.P.shape[0])
-        # self.P = (I - K @ self.H) @ self.P @ (I - K @ self.H) + K @ self.R @ K.T
-        self.P = (I - K @ self.H) @ self.P
