@@ -14,6 +14,15 @@ UdpClient::~UdpClient()
 {
     if (this->m_port != -1)
         close(this->m_port);
+
+    if (this->m_sockfd != -1)
+    {
+        if (close(this->m_sockfd) < 0)
+        {
+            std::cerr << "Error closing socket: " << std::strerror(errno) << std::endl;
+        }
+        this->m_sockfd = -1;
+    }
 }
 
 int    UdpClient::initializeClient(int port, std::string addr)

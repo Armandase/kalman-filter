@@ -27,13 +27,14 @@ void KalmanFilter::initMatrices(const VectorXd &pos, const VectorXd &accel, cons
 	std::cout << "Initializing KalmanFilter matrices..." << std::endl;
 	VectorXd defaultVelocity(3);	  // Default velocity vector initialized to zero
 	defaultVelocity(0) = speed / 3.6; // Set the x component to speed
+	defaultVelocity(1) = 0; // Set the x component to speed
+	defaultVelocity(2) = 0; // Set the x component to speed
 	// Compute the velocity based on speed and direction
 	VectorXd velocity(3);
 	velocity = computeVelocity(accel, dir, defaultVelocity, DT);
 
 	// Initialize state vector with position, velocity, and acceleration
 	this->x << pos(0), pos(1), pos(2), velocity(0), velocity(1), velocity(2);
-
 	// Initialize state transition matrix F based on speed and direction
 	this->F = MatrixXd::Identity(dimX, dimX); // State transition matrix
 	this->F(0, 3) = DT;						  // x position update
