@@ -35,7 +35,7 @@ cmake --build build --config Release
 
 ## Running the Filter
 
-1. Start UDP data source flux that publishes IMU packets on port `4242`. You can use `imu-sensor-stream-linux` or your own sensor simulator.
+1. Start UDP data source flux that publishes IMU packets on port `4242`. You can use `tools/imu-sensor-stream-linux` or your own sensor simulator.
 2. Launch the client:
 
    ```bash
@@ -105,7 +105,7 @@ gnuplot -persist -e "set title 'Z Position and Z Variance'; \
     pause -1"
 ```
 
-Alternatively, run one of the helper scripts (`2d_plot.sh`, `3d_plot.sh`, `variance_3d_pos.sh`, etc.) to spawn preconfigured charts.
+Alternatively, run one of the helper scripts (`tools/2d_plot.sh`, `tools/3d_plot.sh`, `tools/variance_3d_pos.sh`, etc.) to spawn preconfigured charts.
 
 ## Bibliographie
 
