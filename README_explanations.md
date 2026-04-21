@@ -22,8 +22,8 @@ $x = [x, y, z, v_x, v_y, v_z]^T$.
 
 ### Connaissance a priori
 Le filtre de Kalman se base  sur une forte connaissance a priori du syteme. Nécessitant d'une initialisation minutieuse:
-- $F$: la matrice de transition d'état, qui décrit comment l'état du système évolue dans un intervalle de temps $\Delta t$.:
-$$
+- $F$: la matrice de transition d'état, qui décrit comment l'état du système évolue dans un intervalle de temps $\Delta t$.: <br>
+$
 F = \begin{bmatrix}
 1.0 & 0.0 & 0.0 & \Delta t & 0.0 & 0.0 \\
 0.0 & 1.0 & 0.0 & 0.0 & \Delta t & 0.0 \\
@@ -31,7 +31,7 @@ F = \begin{bmatrix}
 0.0 & 0.0 & 0.0 & 1.0 & 0.0 & 0.0 \\
 0.0 & 0.0 & 0.0 & 0.0 & 1.0 & 0.0 \\
 0.0 & 0.0 & 0.0 & 0.0 & 0.0 & 1.0
-\end{bmatrix}$$
+\end{bmatrix}$
 avec: $\Delta t = 0.01$
 
 
