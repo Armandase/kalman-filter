@@ -23,7 +23,7 @@ $x = [x, y, z, v_x, v_y, v_z]^T$.
 ### Connaissance a priori
 Le filtre de Kalman se base  sur une forte connaissance a priori du syteme. Nécessitant d'une initialisation minutieuse:
 - $F$: la matrice de transition d'état, qui décrit comment l'état du système évolue dans un intervalle de temps $\Delta t$.: <br>
-$
+$$
 F = \begin{bmatrix}
 1.0 & 0.0 & 0.0 & \Delta t & 0.0 & 0.0 \\
 0.0 & 1.0 & 0.0 & 0.0 & \Delta t & 0.0 \\
@@ -31,61 +31,73 @@ F = \begin{bmatrix}
 0.0 & 0.0 & 0.0 & 1.0 & 0.0 & 0.0 \\
 0.0 & 0.0 & 0.0 & 0.0 & 1.0 & 0.0 \\
 0.0 & 0.0 & 0.0 & 0.0 & 0.0 & 1.0
-\end{bmatrix}$
+\end{bmatrix}
+$$
 avec: $\Delta t = 0.01$
 
 
 - $H$: Matrice d'observation. Relie les observations aux états du système. Dans notre cas on observe uniquement les positions:
-$$H = \begin{bmatrix}
+$$
+H = \begin{bmatrix}
 1.0 & 0.0 & 0.0 & 0.0 & 0.0 & 0.0 \\
 0.0 & 1.0 & 0.0 & 0.0 & 0.0 & 0.0 \\
 0.0 & 0.0 & 1.0 & 0.0 & 0.0 & 0.0
-\end{bmatrix}$$
+\end{bmatrix}
+$$
 
 - $Q$: Matrice de covariance représentant l'incertitude du modèle de transition d'état. Donc $Q$ représente la covariance du bruit a priori (que le filtre suppose exister) dans la prédiction.
 
 - $R$: la matrice de covariance des mesures issue de l'IMU.
 Définit par les specifications du capteur.
-$$R = \begin{bmatrix}
+$$
+R = \begin{bmatrix}
 \sigma_{gps}^2 & 0 & 0 \\
 0 & \sigma_{gps}^2 & 0 \\
 0 & 0 & \sigma_{gps}^2
-\end{bmatrix}$$
+\end{bmatrix}
+$$
 Où: $\sigma_{gps}^2 = 10^{-2}$
 
 
 - $P$: Incertitude initiale sur l'estimation de l'état du système.
-$$P = \begin{bmatrix}
+$$
+P = \begin{bmatrix}
 \sigma_{pos}^2 & 0 & 0 & 0 & 0 & 0 \\
 0 & \sigma_{pos}^2 & 0 & 0 & 0 & 0 \\
 0 & 0 & \sigma_{pos}^2 & 0 & 0 & 0 \\
 0 & 0 & 0 & \sigma_{vel}^2 & 0 & 0 \\
 0 & 0 & 0 & 0 & \sigma_{vel}^2 & 0 \\
 0 & 0 & 0 & 0 & 0 & \sigma_{vel}^2
-\end{bmatrix} * \lambda$$
+\end{bmatrix} * \lambda
+$$
 Où: $\sigma_{vel}^2 = \sigma_{gyro}^2 + \sigma_{acc}^2 * (\Delta t)^2$ variance de la vélocité et $\lambda$ = 10 facteur de confiance dans l'estimation initiale.
 ![alt text](assets/kalman_covariance_matrix_p.png)
 
 
 - $B$: la matrice de contrôle, qui relie les commandes aux états du système  (optionnelle).
-$$B = \begin{bmatrix}
+$$
+B = \begin{bmatrix}
 0.5 * (\Delta t)^2 & 0.0 & 0.0 \\
 0.0 & 0.5 * (\Delta t)^2 & 0.0 \\
 0.0 & 0.0 & 0.5 * (\Delta t)^2 \\
 \Delta t & 0.0 & 0.0 \\
 0.0 & \Delta t & 0.0 \\
 0.0 & 0.0 & \Delta t
-\end{bmatrix}$$
+\end{bmatrix}
+$$
 
 - $x$: Etat initial du système. <br>
 Au lancement de l'IMU, le capteur nous envoie la position et la vitesse réelle.
-$$ x = \begin{bmatrix}x_0 \\
+$$
+x = \begin{bmatrix}
+x_0 \\
 y_0 \\
 z_0 \\
 v_{x0} \\
 v_{y0} \\
-v_{z0} \\
-\end{bmatrix}$$
+v_{z0}
+\end{bmatrix}
+$$
 
 Ces paramètres sont essentiels au fonctionnement du filtre et doivent être choisis avec soin en fonction du système à modéliser.
 Ainsi, il est nécessaire d'avoir une bonne compréhension du système et de ses caractéristiques pour pouvoir initialiser correctement le filtre de Kalman. <br>
