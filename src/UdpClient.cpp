@@ -52,7 +52,7 @@ int    UdpClient::initializeClient(int port, std::string addr)
 
 int UdpClient::sendMessage(std::string msg)
 {
-    std::cout << "Sending message: " << msg << std::endl;
+    // std::cout << "Sending message: " << msg << std::endl;
     if (sendto(m_sockfd, (const char *)msg.c_str(), msg.length(),
         0, (const struct sockaddr *)&m_servaddr,
         sizeof(m_servaddr))  == -1 )
@@ -60,7 +60,7 @@ int UdpClient::sendMessage(std::string msg)
         std::cerr << "Send Message " << std::strerror(errno) << std::endl;
         return 1;
     }
-    std::cout << "Message sent" << std::endl;
+    // std::cout << "Message sent" << std::endl;
     return 0;
 }
 

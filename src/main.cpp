@@ -26,7 +26,7 @@ std::string computeResponse(KalmanFilter &kf, DataStorage &data)
 		kf.initMatrices(truePos, accel, dir, speed);
 	}
 
-	kf.predict(data.getAcceleration());
+	kf.predict(data.getAcceleration()); // compute new state (gps, velocity)
 
 	if (data.isPositionEmpty() == false)
 	{
@@ -80,7 +80,7 @@ int main()
 		std::remove("variance.txt");
 
 		bool running = true;
-		int nbResponseSend = 0;
+		// int nbResponseSend = 0;
 		while (running)
 		{
 			if (client.readMessage())
@@ -97,8 +97,8 @@ int main()
 				client.sendMessage(response);
 
 				data.clearData();
-				nbResponseSend++;
-				std::cout << "Response " << nbResponseSend << std::endl;
+				// nbResponseSend++;
+				// std::cout << "Response " << nbResponseSend << std::endl;
 			}
 		}
 	} 

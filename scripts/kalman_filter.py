@@ -61,7 +61,7 @@ class KalmanFilter():
         self.x = np.concatenate((np.array(true_pos), velocity))
         self.pos = np.array(true_pos)
 
-        # # print every matrix
+        # print every matrix
         # print("F:\n", self.F)
         # # P
         # print("P:\n", self.P)
@@ -75,6 +75,8 @@ class KalmanFilter():
         # print("B:\n", self.B)
 
         # print("Initial state x:\n", self.x)
+
+        # exit()
 
     def predict(self, u=None):
         if u is None:

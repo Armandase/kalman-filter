@@ -87,7 +87,7 @@ void KalmanFilter::predict(const VectorXd &u)
 		return;
 	}
 	// Predict the next state with control input
-	this->x = this->F * this->x + this->B * u;					 // State prediction with control input
+	this->x = this->F * this->x + this->B * u;// State prediction with control input
 	this->P = this->F * this->P * this->F.transpose() + this->Q; // Covariance prediction
 }
 
