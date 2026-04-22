@@ -81,16 +81,16 @@ Le filtre de Kalman se base  sur une forte connaissance a priori du syteme. Néc
 
 
 - $B$: la matrice de contrôle, qui relie les commandes (ici, l'accélération mesurée $u_k$) à l'état du système.
-    ``` math
-    B = \begin{bmatrix}
-    0.5 * (\Delta t)^2 & 0 & 0 \\
-    0 & 0.5 * (\Delta t)^2 & 0 \\
-    0 & 0 & 0.5 * (\Delta t)^2 \\
-    \Delta t & 0 & 0 \\
-    0 & \Delta t & 0 \\
-    0 & 0 & \Delta t
-    \end{bmatrix}
-    ```
+``` math
+B = \begin{bmatrix}
+0.5 * (\Delta t)^2 & 0 & 0 \\
+0 & 0.5 * (\Delta t)^2 & 0 \\
+0 & 0 & 0.5 * (\Delta t)^2 \\
+\Delta t & 0 & 0 \\
+0 & \Delta t & 0 \\
+0 & 0 & \Delta t
+\end{bmatrix}
+```
 
 - $x$: Etat initial du système. <br>
 Au lancement de l'IMU, le capteur nous envoie la position et la vitesse réelle.
@@ -115,8 +115,7 @@ D'une point de vue *Bayesien*, ce sont nos **connaissances a priori**.
 ## Prediction
 
 1. **Prédiction du prochain état à partir de l'état actuel et du contrôle d'entrée:**
-
-    $x_{k|k-1} = F x_{k-1|k-1} + B u_k$
+    $$x_{k|k-1} = F x_{k-1|k-1} + B u_k$$
     Où:
     - $x_{k|k-1}$: Estimation a priori de l'état du système à l'instant $k$ avant la mise à jour avec les mesures.
     - $x_{k-1|k-1}$: Estimation a posteriori de l'état du système à l'instant $k-1$ après la mise à jour avec les mesures.
@@ -124,8 +123,7 @@ D'une point de vue *Bayesien*, ce sont nos **connaissances a priori**.
 
 
 2. **Propagation de l'incertitude de l'estimation:**
-
-    $P_{k|k-1} = F P_{k-1|k-1} F^T + Q$
+    $$P_{k|k-1} = F P_{k-1|k-1} F^T + Q$$
     La forme $F P_{k-1|k-1} F^T$ permet de calculer la covariance de $P_{k|k-1}$ en prenant en compte la transformation linéaire $F$. 
     <br>
     Car : $Cov [Ax + b] = ACov [x] A^T$.
@@ -135,21 +133,20 @@ D'une point de vue *Bayesien*, ce sont nos **connaissances a priori**.
 ## Update
 
 1. **Résidu de l'innovation**
-   
-   $y_k = z_k - H x_{k|k-1}$
+   $$y_k = z_k - H x_{k|k-1}$$
    Où:
    - $y_k$: Résidu de l'innovation, qui représente la différence entre la mesure réelle $z_k$ et la mesure prédite $H x_{k|k-1}$. C'est une mesure de l'erreur de prédiction du système.
    - $z_k$: Mesure réelle à l'instant $k$ (ici, la position GPS) .
 
 
-2. **Covariance de l'innovation**<br>
-    $S_k = H P_{k|k-1} H^T + R$
+2. **Covariance de l'innovation**
+    $$S_k = H P_{k|k-1} H^T + R$$
     Où:
     - $S_k$: Covariance de l'innovation, qui représente l'incertitude totale (incertitude des prédictions + incertitude de la mesure).
 
 
-3. **Gain de Kalman optimal**<br>
-    $K_k = P_{k|k-1} H^T S_k^{-1}$
+3. **Gain de Kalman optimal**
+    $$K_k = P_{k|k-1} H^T S_k^{-1}$$
     Où:
     - $K_k$: Gain de Kalman optimal, qui détermine notre niveau de confiance dans les mesures par rapport à nos prédictions.
     <br><br>
@@ -157,15 +154,13 @@ D'une point de vue *Bayesien*, ce sont nos **connaissances a priori**.
     gain faible = confiance élevée dans les prédictions.
 
 
-4. **Correction de l'estimation de l'état**<br>
+4. **Correction de l'estimation de l'état**
     $$x_{k|k} = x_{k|k-1} + K_k y_k$$
     Où:
     - $x_{k|k}$: Estimation a posteriori de l'état du système à l'instant $k$ après la mise à jour avec les mesures.
 
-5. **Correction de l'incertitude d'estimation**<br>
-    $$
-    P_{k|k} = (I - K_k H) P_{k|k-1}
-    $$
+5. **Correction de l'incertitude d'estimation**
+    $$P_{k|k} = (I - K_k H) P_{k|k-1}$$
     Où:
     - $P_{k|k}$: Incertitude a posteriori de l'estimation de l'état du système à l'instant $k$ après la mise à jour via les mesures.
     - $I$: Matrice identité.
