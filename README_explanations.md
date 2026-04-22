@@ -1,6 +1,6 @@
 # Kalman Filter
 
-![formula](https://images.squarespace-cdn.com/content/v1/5b2d76525cfd790c4a218093/1608502019200-SCOZXGEPES1W86052M39/linear_kalman_filter_math.png)
+<!-- ![formula](https://images.squarespace-cdn.com/content/v1/5b2d76525cfd790c4a218093/1608502019200-SCOZXGEPES1W86052M39/linear_kalman_filter_math.png) -->
 
 Filtre de kalman pour un plan 3D traitant des données issues d'un capteur IMU embarquant:
 - un accéléromètre
@@ -100,13 +100,15 @@ v_{z0}
 ```
 
 Ces paramètres sont essentiels au fonctionnement du filtre et doivent être choisis avec soin en fonction du système à modéliser.
-Ainsi, il est nécessaire d'avoir une bonne compréhension du système et de ses caractéristiques pour pouvoir initialiser correctement le filtre de Kalman. <br>
+
+Ainsi, il est nécessaire d'avoir une bonne compréhension du système et de ses caractéristiques pour pouvoir initialiser correctement le filtre de Kalman.
+
 D'une point de vue Bayesian, ce sont nos connaissances a priori.
 
 ## Prediction
 
 1. Prédiction du prochain état à partir de l'état actuel et du contrôle d'entrée:
-$$ x_{k|k-1} = F_k x_{k-1|k-1} + B u_k $$
+$ x_{k|k-1} = F_k x_{k-1|k-1} + B u_k $
 Où:
 - $x_{k|k-1}$: Estimation a priori de l'état du système à l'instant $k$ avant la mise à jour avec les mesures.
 - $x_{k-1|k-1}$: Estimation a posteriori de l'état du système à l'instant $k-1$ après la mise à jour avec les mesures.
@@ -116,16 +118,44 @@ Où:
 2. Propagation de l'incertitude de l'estimation:
 $$ P_{k|k-1} = F_k P_{k-1|k-1} F_k^T + Q $$
 
-la forme $F_k P_{k-1|k-1} F_k^T$ permet de calculer la covariance de $P_{k|k-1}$ en prenant en compte la transformation linéaire $F_k$. 
+<!-- Cov [Ax + b] = ACov [x] AT -->
+La forme $F_k P_{k-1|k-1} F_k^T$ permet de calculer la covariance de $P_{k|k-1}$ en prenant en compte la transformation linéaire $F_k$. 
+
+Car : $Cov [Ax + b] = ACov [x] A^T$.
+
 Le terme $Q$ impacte directement la covariance de $P_{k|k-1}$ en ajoutant une incertitude supplémentaire à l'estimation de l'état du système.
 
 ## Update
 
 1. Résidu de l'innovation
+$ y_k = z_k - H x_{k|k-1} $
+Où:
+- $y_k$: Résidu de l'innovation, qui représente la différence entre la mesure réelle $z_k$ et la mesure prédite $H x_{k|k-1}$. C'est une mesure de l'erreur de prédiction du système.
+- $z_k$: Mesure réelle à l'instant $k$.
+
 2. Covariance de l'innovation
+$ S_k = H P_{k|k-1} H^T + R $
+Où:
+- $S_k$: Covariance de l'innovation, qui représente l'incertitude dans les prédictions et les mesures.
+
 3. Gain de Kalman optimal
+$ K_k = P_{k|k-1} H^T S_k^{-1} $
+Où:
+- $K_k$: Gain de Kalman optimal, qui détermine notre niveau de confiance dans les mesures par rapport à nos prédictions.
+
+gain élevé  = confiance aux mesures
+gain faible = confiance aux prédictions.
+
 4. Correction de l'estimation de l'état
-5. Correction de la covariance de l'estimation
+$ x_{k|k} = x_{k|k-1} + K_k y_k $
+Où:
+- $x_{k|k}$: Estimation a posteriori de l'état du système à l'instant $k$ après la mise à jour avec les mesures.
+
+5. Correction de l'incertitude d'estimation
+$ P_{k|k} = (I - K_k H) P_{k|k-1} $
+Où:
+- $P_{k|k}$: Incertitude a posteriori de l'estimation de l'état du système à l'instant $k$ après la mise à jour via les mesures.
+- $I$: Matrice identité.
 
 ## Bibliography:
 [https://medium.com/@sophiezhao_2990/kalman-filter-explained-simply-2b5672429205](https://medium.com/@sophiezhao_2990/kalman-filter-explained-simply-2b5672429205)
