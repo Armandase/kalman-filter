@@ -7,10 +7,10 @@ Filtre de kalman pour un plan 3D traitant des données issues d'un capteur IMU e
 - un gyroscope
 - un GPS
 
-Les mesures subissent un bruit blanc gaussien tel que:
-$$Accelerometer: \mu = 0 , \sigma = 10^{-3}$$
-$$Gyroscope: \mu = 0 , \sigma = 10^{-2}$$
-$$GPS: \mu = 0 , \sigma = 10^{-1}$$
+Les mesures subissent un bruit blanc gaussien tel que:<br>
+$$Accelerometer: \mu = 0 , \sigma = 10^{-3}$$<br>
+$$Gyroscope: \mu = 0 , \sigma = 10^{-2}$$<br>
+$$GPS: \mu = 0 , \sigma = 10^{-1}$$<br>
 
 ## Initialization
 
