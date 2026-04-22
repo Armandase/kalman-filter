@@ -60,7 +60,7 @@ Où: $\sigma_{gps}^2 = 10^{-2}$
 
 
 - $P$: Incertitude initiale sur l'estimation de l'état du système.
-```
+``` math
 P = \begin{bmatrix}
 \sigma_{pos}^2 & 0 & 0 & 0 & 0 & 0 \\
 0 & \sigma_{pos}^2 & 0 & 0 & 0 & 0 \\
