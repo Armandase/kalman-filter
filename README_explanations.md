@@ -169,6 +169,8 @@ Où:
 
 [engineeringmedia.com/controlblog/the-kalman-filter](https://engineeringmedia.com/controlblog/the-kalman-filter)
 
+[https://wirelesspi.com/the-easiest-tutorial-on-kalman-filter/](https://wirelesspi.com/the-easiest-tutorial-on-kalman-filter/)
+
 ## Notes:
 
 Revoir formule std de velocité.<br>
