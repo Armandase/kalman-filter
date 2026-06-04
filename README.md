@@ -112,9 +112,4 @@ Alternatively, run one of the helper scripts (`tools/2d_plot.sh`, `tools/3d_plot
 - https://www.ferdinandpiette.com/blog/2011/04/exemple-dutilisation-du-filtre-de-kalman/
 - https://pagespro.isae-supaero.fr/IMG/pdf/introKalman_vf_2008.pdf
 - https://apps.dtic.mil/sti/tr/pdf/ADA024377.pdf
-
-## Contributors
-
-This work was done collaboratively by:
-- **[Dboire](https://github.com/Dboire9)**
-- **[Armandase](https://github.com/Armandase)**
+- https://www.youtube.com/watch?v=HZgv6B9Sq1E
