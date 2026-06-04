@@ -160,8 +160,10 @@ D'une point de vue *Bayesien*, ce sont nos **connaissances a priori**.
     Où:
     - $K_k$: Gain de Kalman optimal, qui détermine notre niveau de confiance dans les mesures par rapport à nos prédictions.
     <br><br>
-    gain élevé = confiance élevée dans les mesures.<br>
+    gain élevé (lim->) = confiance élevée dans les mesures.<br>
     gain faible = confiance élevée dans les prédictions.
+    $\lim_{K_k \to 1} (\text{confiance élevée dans les mesures})$
+    $\lim_{K_k \to 0} (\text{confiance élevée dans les prédictions}).$
 
 
 4. **Correction de l'estimation de l'état**
