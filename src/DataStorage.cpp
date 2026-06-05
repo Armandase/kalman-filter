@@ -47,7 +47,7 @@ void DataStorage::readBuffer(std::string &buffer)
     }
     if (m_dataMap.find(title) == m_dataMap.end())
     {
-        std::cerr << "Title not found in data map: " << title << std::endl;
+        std::cerr << title << std::endl;
         return;
     }
 

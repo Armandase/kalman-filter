@@ -52,7 +52,6 @@ int    UdpClient::initializeClient(int port, std::string addr)
 
 int UdpClient::sendMessage(std::string msg)
 {
-    // std::cout << "Sending message: " << msg << std::endl;
     if (sendto(m_sockfd, (const char *)msg.c_str(), msg.length(),
         0, (const struct sockaddr *)&m_servaddr,
         sizeof(m_servaddr))  == -1 )
@@ -60,7 +59,6 @@ int UdpClient::sendMessage(std::string msg)
         std::cerr << "Send Message " << std::strerror(errno) << std::endl;
         return 1;
     }
-    // std::cout << "Message sent" << std::endl;
     return 0;
 }
 
@@ -73,10 +71,9 @@ int UdpClient::readMessage()
 
     int totalBytesRead = recvfrom(m_sockfd, (char *)tmp_buffer, BUFFER_SIZE,
         0, (struct sockaddr *)&m_servaddr, &len);
-    // (socklen_t *)&len);
     if (totalBytesRead < 0 )
     {
-        std::cerr << "ReadMessage " << std::strerror(errno) << std::endl;
+        std::cerr << std::strerror(errno) << std::endl;
         return 1;
     }
     tmp_buffer[totalBytesRead] = '\0';

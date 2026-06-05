@@ -19,10 +19,6 @@ std::string computeResponse(KalmanFilter &kf, DataStorage &data)
 		VectorXd dir = data.getDirection();
 		double speed = data.getSpeedValue();
 
-		// if (truePos.size() == 0 || accel.size() == 0 || dir.size() == 0 || std::isnan(speed)) {
-		// 	throw std::runtime_error("Kalman filter initialization failed: missing data.");
-        // }
-
 		kf.initMatrices(truePos, accel, dir, speed);
 	}
 
@@ -80,7 +76,6 @@ int main()
 		std::remove("variance.txt");
 
 		bool running = true;
-		// int nbResponseSend = 0;
 		while (running)
 		{
 			if (client.readMessage())
@@ -97,8 +92,6 @@ int main()
 				client.sendMessage(response);
 
 				data.clearData();
-				// nbResponseSend++;
-				// std::cout << "Response " << nbResponseSend << std::endl;
 			}
 		}
 	} 

@@ -5,7 +5,7 @@ import numpy as np
 from utils import display_history, array_to_reponse, display_pos_offset, compute_velocity
 from kalman_filter import KalmanFilter
 from real_kalman import KakalmanFilter
-from constants import DELTA_T 
+from constants import DELTA_T
 
 
 def send_msg(client_socket, msg, addr=("127.0.0.1", 4242)):
@@ -97,15 +97,15 @@ def read(client_socket):
 
     return history    
 
-def launch_imu():
+def launch_imu(imu):
     # ./imu-sensor-stream-linux -s 42 -d 10 -p 4242 --debug
     import os
     import subprocess
     os.system("pkill imu-sensor-stream-linux")  # Kill any existing imu sensor stream
-    # command = "./imu-sensor-stream-linux -s 42 -d 10 -p 4242 --debug"
     # command = "./imu-sensor-stream-linux -s 42 -d 10 -p 4242"
+    #command = "./imu-sensor-stream-linux -s 42 -p 4242 --filterspeed"
     # command = "./imu-sensor-stream-linux -s 42 -p 4242 --debug"
-    command = "./imu-sensor-stream-linux -s 42 -p 4242 --filterspeed"
+    command = imu + "-s 42 -p 4242 --debug"
     gnome_terminal_command = f"gnome-terminal -- bash -c '{command}'"
     process = subprocess.Popen(gnome_terminal_command, shell=True)
     if process.poll() is not None:
@@ -115,9 +115,9 @@ def launch_imu():
     sleep_time = 2
     time.sleep(sleep_time) 
 
-def main(address="127.0.0.1", port=4242, visual=False, imu=False):
+def main(address="127.0.0.1", port=4242, visual=False, imu=None):
     if imu:
-        launch_imu()
+        launch_imu(imu)
     client_socket = connect(addr=address, port=port)
     history = read(client_socket)
     if visual:
@@ -130,6 +130,7 @@ if __name__ == "__main__":
     parser.add_argument('--address', '-a', default="127.0.0.1", type=str)
     parser.add_argument('--port', '-p', default=4242, type=int)
     parser.add_argument('--visual', '-v', default=False, action=argparse.BooleanOptionalAction, help="Display the history of the data")
-    parser.add_argument('--imu', default=False, action=argparse.BooleanOptionalAction) # enbale or disable imu
+    # parser.add_argument('--imu', default=False, action=argparse.BooleanOptionalAction) # enbale or disable imu
+    parser.add_argument('--imu', default=None, type=str) # enbale or disable imu
     args = parser.parse_args()
     main(args.address, args.port, args.visual, args.imu)

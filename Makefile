@@ -41,7 +41,9 @@ clean:
 
 fclean: clean
 	rm -f $(NAME)
-	# rm -rf $(EIGEN_DIR) # Décommenter pour supprimer la bibliothèque Eigen
+	rm -rf $(EIGEN_DIR)
+	rm -rf variance.txt
+	rm -rf estimated_positions.txt
 
 re: fclean all
 
