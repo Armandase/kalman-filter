@@ -139,8 +139,8 @@ Le seul input (optionnel) envoyé par le capteur IMU lors de la phase de prédic
 **En résumé (pour faire simple) :**
 Pendant cette phase, on se contente de faire avancer notre système dans le temps. 
 
-- **Évolution :** On devine où se trouve maintenant le véhicule en prenant notre dernière position connue et en y ajoutant le pas temporel et l'accélération.
-- **Décalage :** On déplace notre marge d'erreur actuelle pour qu'elle corresponde à ce nouveau moment dans le temps.
+- **Prédiction :** On prédit où se trouve maintenant le véhicule en prenant notre dernière position connue et en y ajoutant le pas temporel et l'accélération.
+- **Estimation:** On ajuste notre marge d'erreur actuelle pour qu'elle corresponde à ce nouveau moment dans le temps.
 - **Doute (Q) :** Plus le temps passe sans mesure du capteur IMU (posiiton GPS), plus on accumule du doute. Ainsi, on augmente volontairement notre marge d'erreur pour admettre que notre calcul théorique n'est pas parfait.
 
 ## Update
