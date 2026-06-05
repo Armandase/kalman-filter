@@ -145,6 +145,9 @@ Pendant cette phase, on se contente de faire avancer notre système dans le temp
 
 ## Update
 
+Cette phase intervient dès qu'une nouvelle mesure GPS est disponible. <br>
+Elle permet de corriger les prédictions théoriques à l'aide de la réalité du terrain.
+
 1. **Résidu de l'innovation**
     <br>
         $$\boxed{y_k = z_k - H x_{k|k-1}}$$
