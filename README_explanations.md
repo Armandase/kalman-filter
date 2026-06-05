@@ -114,6 +114,8 @@ D'une point de vue *Bayesien*, ce sont nos **connaissances a priori**.
 
 ## Prediction
 
+Le seul input (optionnel) envoyé par le capteur IMU lors de la phase de prédiction est l'accélération.
+<br>
 1. **Prédiction du prochain état à partir de l'état actuel et du contrôle d'entrée:**<br>
     
     $$\boxed{x_{k|k-1} = F x_{k-1|k-1} + B u_k}$$
