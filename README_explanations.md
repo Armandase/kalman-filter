@@ -132,7 +132,7 @@ D'une point de vue *Bayesien*, ce sont nos **connaissances a priori**.
     <br>
     Car : $Cov [Ax + b] = ACov [x] A^T$.
     <br><br>
-    Le terme $Q$ impacte directement la covariance de $P_{k|k-1}$ en ajoutant une incertitude supplémentaire provennat du bruit interne du modèle. <br>
+    Le terme $Q$ impacte directement la covariance de $P_{k|k-1}$ en ajoutant une incertitude supplémentaire provennat du bruit interne du modèle. <br><br>
     En résumé:<br>
     On déplace l'incertitude dans le temps (via $F$).<br>
     On admet qu'on a perdu un peu de précision en cours de route (via $Q$).
