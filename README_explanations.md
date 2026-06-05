@@ -196,8 +196,8 @@ C'est le moment où la théorie se confronte à la réalité.
 
 - **Écart ($y_k$) :** On compare ce que dit le GPS avec ce qu'on avait calculé théoriquement.
 - **Confiance ($K_k$) :** Le filtre calcule le gain de Kalman pour savoir qui a raison. Si le GPS est réputé très précis ($R$ faible), on va plus faire confiance au GPS. A contrario, si le GPS capte mal, on va plus donner raison à notre calcul théorique.
-- **Correction ($x_{k|k}$) :** On ajuste notre position actuelle en ajoutant l'écart, dosée précisément par notre niveau de confiance ($K_k$).
-- **Correction du doute ($P_{k|k}$) :** Obtenir une vraie mesure extérieure fait du bien au filtre. On réduit notre marge d'erreur globale ($P$) : le doute s'ajuste.
+- **Correction ($x_{k|k}$) :** On ajuste notre position actuelle en ajoutant l'écart, dosée par notre niveau de confiance ($K_k$).
+- **Correction du doute ($P_{k|k}$) :** On ajuste le doute de nos prédictions grâce à la confiance qu'on accorde à la nouvelle mesure.
 
 ## Bibliography:
 [https://medium.com/@sophiezhao_2990/kalman-filter-explained-simply-2b5672429205](https://medium.com/@sophiezhao_2990/kalman-filter-explained-simply-2b5672429205)
