@@ -135,9 +135,13 @@ Le seul input (optionnel) envoyé par le capteur IMU lors de la phase de prédic
     Car : $Cov [Ax + b] = ACov [x] A^T$.
     <br><br>
     Le terme $Q$ impacte directement la covariance de $P_{k|k-1}$ en ajoutant une incertitude supplémentaire provennat du bruit interne du modèle. <br><br>
-    En résumé:<br>
-    On déplace l'incertitude dans le temps (via $F$).<br>
-    On admet qu'on a perdu un peu de précision en cours de route (via $Q$).
+
+**En résumé (pour faire simple) :**
+Pendant cette phase, on se contente de faire avancer notre système dans le temps. 
+
+- **Évolution :** On devine où se trouve maintenant le véhicule en prenant notre dernière position connue et en y ajoutant le pas temporel et l'accélération.
+- **Décalage :** On déplace notre marge d'erreur actuelle pour qu'elle corresponde à ce nouveau moment dans le temps.
+- **Doute (Q) :** Plus le temps passe sans mesure du capteur IMU (posiiton GPS), plus on accumule du doute. Ainsi, on augmente volontairement notre marge d'erreur pour admettre que notre calcul théorique n'est pas parfait.
 
 ## Update
 
