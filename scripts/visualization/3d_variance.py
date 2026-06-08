@@ -63,6 +63,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Plot X Position and X Variance over time.')
     parser.add_argument('estimated_positions_file', type=str, help='File containing estimated positions')
     parser.add_argument('variance_file', type=str, help='File containing variances')
-    parser.add_argument('--max_lines', type=int, default=1000, help='Maximum number of lines to read from files')
+    parser.add_argument('--max_lines', type=int, default=None, help='Maximum number of lines to read from files')
     args = parser.parse_args()
     main(args.estimated_positions_file, args.variance_file, args.max_lines)
