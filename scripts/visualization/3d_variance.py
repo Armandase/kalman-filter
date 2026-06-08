@@ -17,10 +17,10 @@ def read_file(filename, max_lines=None):
             data.append(line_data)
     return data
 
-def main(estimated_pos_file, variance_file):
+def main(estimated_pos_file, variance_file, max_lines=None):
     # Load data from files
-    estimated_positions = read_file(estimated_pos_file, 1000)
-    variances = read_file(variance_file, 1000)
+    estimated_positions = read_file(estimated_pos_file, max_lines)
+    variances = read_file(variance_file, max_lines)
 
     # 3d plot
     fig = plt.figure()
@@ -47,7 +47,7 @@ def main(estimated_pos_file, variance_file):
                     [x + var for x, var in zip(x_positions, x_variances)],
                     [y + var for y, var in zip(y_positions, y_variances)],
                     [z + var for z, var in zip(z_positions, z_variances)],
-                     color='blue', alpha=0.2, label='X Variance')
+                     color='red', alpha=0.7, label='X Variance', lw=0)
 
     ax.plot(x_positions, y_positions, z_positions, color='blue', label='Estimated Trajectory')
     ax.set_xlabel('X Position')
@@ -63,5 +63,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Plot X Position and X Variance over time.')
     parser.add_argument('estimated_positions_file', type=str, help='File containing estimated positions')
     parser.add_argument('variance_file', type=str, help='File containing variances')
+    parser.add_argument('--max_lines', type=int, default=1000, help='Maximum number of lines to read from files')
     args = parser.parse_args()
-    main(args.estimated_positions_file, args.variance_file)
+    main(args.estimated_positions_file, args.variance_file, args.max_lines)
