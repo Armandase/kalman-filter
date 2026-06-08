@@ -15,14 +15,23 @@ def read_file(filename):
             data.append(line_data)
     return data
 
-def main(esitmated_pos_file, variance_file):
+def main(esitmated_pos_file, variance_file, axis='x'):
     # Load data from files
     estimated_positions = read_file(esitmated_pos_file)
     variances = read_file(variance_file)
 
+    if axis == 'x':
+        pos_index = 0
+    elif axis == 'y':
+        pos_index = 1
+    elif axis == 'z':
+        pos_index = 2
+    else:
+        raise ValueError("Axis must be 'x', 'y', or 'z'")
+
     # Extract X positions and variances
-    x_positions = [float(pos[0]) for pos in estimated_positions]
-    x_variances = [float(var[0]) for var in variances]
+    x_positions = [float(pos[pos_index]) for pos in estimated_positions]
+    x_variances = [float(var[pos_index]) for var in variances]
 
     # Create a figure and axis
     fig, ax1 = plt.subplots()
@@ -47,5 +56,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Plot X Position and X Variance over time.')
     parser.add_argument('estimated_positions_file', type=str, help='File containing estimated positions')
     parser.add_argument('variance_file', type=str, help='File containing variances')
+    parser.add_argument('--axis', type=str, default='x', help='Axis to plot (x, y, or z)')
     args = parser.parse_args()
-    main(args.estimated_positions_file, args.variance_file)
+    main(args.estimated_positions_file, args.variance_file, args.axis)
